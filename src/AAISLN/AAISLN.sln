@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AAI.GenericChatInterface", "AAI.GenericChatInterface\AAI.GenericChatInterface.csproj", "{4AE98315-E2AE-4F0A-82AB-38CB711860BA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI", "UI", "{EEB4B187-AE40-4962-89EF-030342D7B38D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Kernel", "Kernel", "{2F13346A-F9AF-4CD2-8619-5E393CC832A5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{CED72185-43DD-41B3-9413-0B87A7E96651}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\README.md = ..\..\README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AAI.AppHost", "AAI.AppHost\AAI.AppHost.csproj", "{E5BE4DE8-4BB1-44E1-8BFD-3101E082926D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4AE98315-E2AE-4F0A-82AB-38CB711860BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AE98315-E2AE-4F0A-82AB-38CB711860BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AE98315-E2AE-4F0A-82AB-38CB711860BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AE98315-E2AE-4F0A-82AB-38CB711860BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5BE4DE8-4BB1-44E1-8BFD-3101E082926D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5BE4DE8-4BB1-44E1-8BFD-3101E082926D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5BE4DE8-4BB1-44E1-8BFD-3101E082926D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5BE4DE8-4BB1-44E1-8BFD-3101E082926D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4AE98315-E2AE-4F0A-82AB-38CB711860BA} = {EEB4B187-AE40-4962-89EF-030342D7B38D}
+		{E5BE4DE8-4BB1-44E1-8BFD-3101E082926D} = {EEB4B187-AE40-4962-89EF-030342D7B38D}
+	EndGlobalSection
+EndGlobal
