@@ -1,0 +1,9 @@
+﻿@page
+@model AAI.GenericChatInterface.Pages.Profile.MyPageModel
+
+@{
+    var name = User.Identity?.Name ?? "";
+    ViewData["Title"] = "My Profile " + name;
+}
+
+

@@ -6,7 +6,8 @@
     <title>@ViewData["Title"]</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/site.css"/>
+    <script data-auto-replace-svg="nest" src="~/js/font-awesome-v-6-7-2.js"></script>
     @await RenderSectionAsync("Head", required: false)
 </head>
 <body>
@@ -14,26 +15,70 @@
     <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
         <div class="container">
             <a class="navbar-brand" asp-area="" asp-page="/Info/Index">Generic Chat UI</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                    aria-controls="navbarSupportedContent"
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                 <ul class="navbar-nav flex-grow-1">
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-page="/Info/Index">Home</a>
+                        <a class="nav-link" asp-area="" asp-page="/Info/Index">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-page="/Chat/Index">Chat</a>
                     </li>
                 </ul>
+                <div class="align-content-end me-2">
+                    <ul class="navbar-nav">
+                        @if (User.Identity is { IsAuthenticated: true })
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="font-weight-bolder mr-2">Welcome</span> <b>@User.Identity.Name</b>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" asp-page="/Profile/My">My profile</a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-page="/Profile/Logout">
+                                            <b>Log me out</b>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-page="/Profile/My">Login <i
+                                        class="fa-solid fa-user"></i></a>
+                            </li>
+                        }
+                    </ul>
+                </div>
             </div>
         </div>
     </nav>
 </header>
 <div class="container">
+    @if (IsSectionDefined("breadcrumb"))
+    {
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                @await RenderSectionAsync("breadcrumb")
+            </ol>
+        </nav>
+    }
     <main role="main" class="pb-3">
         @RenderBody()
     </main>
 </div>
-
 <footer class="border-top footer text-muted">
     <div class="container">
         &copy; @DateTime.Now.Year - <a asp-area="" asp-page="/Info/Privacy">Privacy</a>

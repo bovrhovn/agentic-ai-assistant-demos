@@ -1,5 +1,8 @@
 using System.Net;
+using AAI.Data.Services;
 using AAI.GenericChatInterface.Helpers;
+using AAI.GenericChatInterface.Options;
+using AAI.Interfaces;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Diagnostics;
@@ -10,21 +13,35 @@ using Microsoft.Identity.Web.UI;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// options
+builder.Services.AddOptions<StorageOptions>()
+    .Bind(builder.Configuration.GetSection(StorageOptions.AppSettingsName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+// asp.net core features
 builder.Services.AddHealthChecks();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
-
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
-
+builder.Services.AddAuthorization(options => { options.FallbackPolicy = options.DefaultPolicy; });
 builder.Services.AddRazorPages().AddRazorPagesOptions(options =>
         options.Conventions.AddPageRoute("/Info/Index", ""))
     .AddMicrosoftIdentityUI();
 builder.Services.AddTransient<ILogger>(p =>
 {
     var loggerFactory = p.GetRequiredService<ILoggerFactory>();
-    return loggerFactory.CreateLogger("PdmForm");
+    return loggerFactory.CreateLogger("agents-to-agents");
 });
+
+//services
+var storageOptions = builder.Configuration.GetSection(StorageOptions.AppSettingsName).Get<StorageOptions>();
+if (storageOptions == null)
+    throw new ArgumentNullException(nameof(storageOptions), "Storage options are not configured properly.");
+
+builder.Services.AddScoped<ISettingsService, StorageSettingsService>(_ =>
+    new StorageSettingsService(storageOptions.SettingsContainer, storageOptions.ConnectionString));
 
 var app = builder.Build();
 

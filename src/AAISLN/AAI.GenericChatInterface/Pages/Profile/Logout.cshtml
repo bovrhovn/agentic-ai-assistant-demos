@@ -1,0 +1,13 @@
+﻿@page
+@model AAI.GenericChatInterface.Pages.Profile.LogoutPageModel
+
+@{
+    ViewData["Title"] = "Logout";
+}
+
+<h2>Are you sure to logout @User.Identity?.Name?</h2>
+<p class="text-bg-warning">If you log out, you will need to log in again to access your profile and chat history.</p>
+<form method="post">
+    <button type="submit" class="btn btn-primary">Yes, log me out</button>
+    <a class="btn btn-secondary" asp-page="/Info/Index">No, take me back</a>
+</form>
