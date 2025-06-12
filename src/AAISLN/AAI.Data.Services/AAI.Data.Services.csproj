@@ -6,11 +6,13 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
-      <ProjectReference Include="..\AAI.Interfaces\AAI.Interfaces.csproj" />
+        <ProjectReference Include="..\AAI.Core\AAI.Core.csproj" />
+        <ProjectReference Include="..\AAI.Interfaces\AAI.Interfaces.csproj"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Azure.Identity" Version="1.14.0" />
-        <PackageReference Include="Azure.Storage.Blobs" Version="12.23.0" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="Azure.Identity" Version="1.14.0"/>
+        <PackageReference Include="Azure.Storage.Blobs" Version="12.23.0"/>
+        <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.51.0"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
     </ItemGroup>
 </Project>

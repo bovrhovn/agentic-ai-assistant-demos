@@ -59,8 +59,7 @@ public class StorageSettingsService : ISettingsService
         if (!await containerClient.ExistsAsync())
             await blobServiceClient.CreateBlobContainerAsync(profileContainerName);
         var blobClient = containerClient.GetBlobClient(settingsId);
-        if (!await blobClient.ExistsAsync())
-            return settings;
+        if (!await blobClient.ExistsAsync()) return settings;
         var downloadedContent = await blobClient.DownloadContentAsync();
         if (!downloadedContent.HasValue) return settings;
         var downloadedProfile = Encoding.UTF8.GetString(downloadedContent.Value.Content);

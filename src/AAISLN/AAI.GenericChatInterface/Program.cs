@@ -40,8 +40,8 @@ var storageOptions = builder.Configuration.GetSection(StorageOptions.AppSettings
 if (storageOptions == null)
     throw new ArgumentNullException(nameof(storageOptions), "Storage options are not configured properly.");
 
-builder.Services.AddScoped<ISettingsService, StorageSettingsService>(_ =>
-    new StorageSettingsService(storageOptions.SettingsContainer, storageOptions.ConnectionString));
+builder.Services.AddScoped<ISettingsService, CosmosDbStorageSettingsService>(_ =>
+    new CosmosDbStorageSettingsService(storageOptions.DatabaseName, storageOptions.SettingsContainer, storageOptions.ConnectionString));
 
 var app = builder.Build();
 
