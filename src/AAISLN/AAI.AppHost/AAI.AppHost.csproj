@@ -17,6 +17,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\AAI.GenericChatInterface\AAI.GenericChatInterface.csproj" />
+      <ProjectReference Include="..\AAI.Rest.Services\AAI.Rest.Services.csproj" />
     </ItemGroup>
 
 </Project>

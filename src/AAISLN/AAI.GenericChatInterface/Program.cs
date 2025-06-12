@@ -1,4 +1,5 @@
 using System.Net;
+using AAI.Core;
 using AAI.Data.Services;
 using AAI.GenericChatInterface.Helpers;
 using AAI.GenericChatInterface.Options;
@@ -47,7 +48,6 @@ var app = builder.Build();
 
 if (!app.Environment.IsDevelopment()) app.UseExceptionHandler("/Info/Error");
 
-app.MapOpenApi();
 app.UseForwardedHeaders();
 app.UseRouting();
 app.UseStaticFiles();
@@ -67,7 +67,7 @@ app.UseExceptionHandler(options =>
         }
     });
 });
-app.MapHealthChecks($"/{RouteHelper.HealthRoute}", new HealthCheckOptions
+app.MapHealthChecks($"/{GeneralRoutes.HealthRoute}", new HealthCheckOptions
 {
     Predicate = _ => true,
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
