@@ -44,9 +44,36 @@ public class CosmosDbChatRepository : IChatRepository
         int modelType,
         DateTime createdAt);
 
-    public Task<List<Chat>> GetForUserAsync(string userId)
+    public async Task<List<Chat>> GetForUserAsync(string userId)
     {
-        throw new NotImplementedException();
+        // Build query definition
+        var parameterizedQuery = new QueryDefinition(
+                query: "SELECT * FROM chats p WHERE p.email = @email ORDER BY p.threadName"
+            ).WithParameter("@email", userId);
+        using var filteredFeed = container.GetItemQueryIterator<ChatModel>(
+            queryDefinition: parameterizedQuery
+        );
+        // Iterate query result pages
+        var list = new List<Chat>();
+        while (filteredFeed.HasMoreResults)
+        {
+            var response = await filteredFeed.ReadNextAsync();
+            // Iterate query results
+            list.AddRange(response.Select(item => new Chat
+            {
+                UserId = item.email,
+                ThreadName = item.threadName,
+                ChatId = item.id,
+                ParentChat = new Chat { 
+                    ChatId = item.parentId, 
+                    ThreadName = item.threadName, 
+                    UserId = item.email, Text = string.Empty },
+                Text = item.text,
+                ChatType = (ChatModelType)item.modelType,
+                DatePosted = item.createdAt
+            }));
+        }
+        return list;
     }
 
     public Task<List<Chat>> GetForThreadAsync(string threadName)

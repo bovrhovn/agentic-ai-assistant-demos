@@ -14,8 +14,9 @@
             <div class="mt-2 mb-2">
                 Conversion Name: <b>{{ threadName }}</b> (<a asp-page="/Profile/ChatHistory">check history</a>)
             </div>
-            <div class="float-end mt-2 mb-2">
+            <div class="float-end m-2">
                 <v-btn size="large" density="compact"
+                       :disabled="isLoading"
                        class="m-2" color="primary" prepend-icon="fas fa-plus"
                        v-on:click="createNewThread">
                     Create new thread

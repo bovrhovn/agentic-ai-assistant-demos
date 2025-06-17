@@ -14,9 +14,6 @@
         <PackageReference Include="Microsoft.Identity.Web.UI" Version="3.9.3" />
     </ItemGroup>
     <ItemGroup>
-      <Folder Include="ViewModels\" />
-    </ItemGroup>
-    <ItemGroup>
       <ProjectReference Include="..\AAI.Data.Services\AAI.Data.Services.csproj" />
       <ProjectReference Include="..\AAI.Interfaces\AAI.Interfaces.csproj" />
     </ItemGroup>

@@ -1,7 +1,43 @@
 ﻿@page
-@model AAI.GenericChatInterface.Pages.Profile.ChatHistory
+@model AAI.GenericChatInterface.Pages.Profile.ChatHistoryPageModel
 
 @{
     ViewData["Title"] = "Chat History";
 }
 
+@if (Model.ChatHistoryList.Any())
+{
+    <table class="table table-hover">
+        <tr>
+            <td>Thread name</td>
+            <td>Thread message count</td>
+            <td>User message count</td>
+            <td>Bot/system message count</td>
+            <td>...</td>
+        </tr>
+        @foreach (var chat in Model.ChatHistoryList)
+        {
+            <tr>
+                <td>
+                    <a asp-page="/Chat/Index" asp-route-threadName="@chat.ThreadName">
+                        @chat.ThreadName
+                    </a>
+                </td>
+                <td>@chat.MessageCount</td>
+                <td>@chat.UserMessageCount</td>
+                <td>@chat.BotMessageCount</td>
+                <td>
+                    <a asp-page="/Chat/Index" asp-route-threadName="@chat.ThreadName">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <div class="alert alert-info" role="alert">
+        No chat history available. Try starting a new conversation at <a asp-page="/Chat/Index">chat interface</a>.
+    </div>
+}

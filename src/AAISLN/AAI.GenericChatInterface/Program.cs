@@ -3,6 +3,7 @@ using AAI.Core;
 using AAI.Data.Services;
 using AAI.GenericChatInterface.Helpers;
 using AAI.GenericChatInterface.Options;
+using AAI.GenericChatInterface.Services;
 using AAI.Interfaces;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -42,9 +43,9 @@ builder.Services.AddTransient<ILogger>(p =>
 
 //services
 var storageOptions = builder.Configuration.GetSection(StorageOptions.AppSettingsName).Get<StorageOptions>()!;
-
 builder.Services.AddScoped<ISettingsService, CosmosDbStorageSettingsService>(_ =>
     new(storageOptions.DatabaseName, storageOptions.SettingsContainer, storageOptions.ConnectionString));
+builder.Services.AddHttpClient<ChatHttpService>();
 
 var app = builder.Build();
 

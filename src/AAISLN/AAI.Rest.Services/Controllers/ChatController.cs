@@ -21,8 +21,27 @@ public class ChatController(ILogger<ChatController> logger, IChatRepository chat
     [ProducesResponseType(StatusCodes.Status200OK)]
     public IActionResult GenerateNewThreadName()
     {
-        logger.LogInformation("Called save endpoint at {DateCalled}", DateTime.UtcNow);
+        logger.LogInformation("Called generate new thread endpoint at {DateCalled}", DateTime.UtcNow);
         return Ok(StringHelper.GenerateUniqueName());
+    }
+    
+    [HttpGet]
+    [Route(DataRoutes.GetHistoryRoute + "/{email}")]
+    [EndpointSummary("Get history chats for user based on primary key.")]
+    [EndpointDescription(
+        "This endpoint is used to get the chat history for a user based on their email address. It is used by the AAI chat interface to display the chat history.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetHistoryAsync(string email)
+    {
+        logger.LogInformation("Called get history endpoint at {DateCalled}", DateTime.UtcNow);
+        var items = await chatRepository.GetForUserAsync(email);
+        if (items == null || items.Count == 0)
+        {
+            logger.LogInformation("No chat history found for user {Email} at {DateCalled}", email, DateTime.UtcNow);
+            return NotFound($"No chat history found for user {email}.");
+        }
+        logger.LogInformation("Found {Count} items for {Email}", items.Count, email);
+        return Ok(items);
     }
     
     [HttpPost]
