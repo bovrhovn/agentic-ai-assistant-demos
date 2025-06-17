@@ -3,14 +3,28 @@ using AAI.Core;
 using AAI.Interfaces;
 using AAI.Models;
 using AAI.Rest.Services.DtoModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AAI.Rest.Services.Controllers;
 
-[ApiController, Route(GeneralRoutes.ChatRoute), Produces(MediaTypeNames.Application.Json)]
+[ApiController, Route(GeneralRoutes.ChatRoute), 
+ AllowAnonymous, Produces(MediaTypeNames.Application.Json)]
 public class ChatController(ILogger<ChatController> logger, IChatRepository chatRepository) : ControllerBase
 {
+    [HttpGet]
+    [Route(DataRoutes.GenerateThreadNameRoute)]
+    [EndpointSummary("Generate a new thread name.")]
+    [EndpointDescription(
+        "This endpoint is used to generate a new thread name for the chat. It is used by the AAI chat interface to create a new thread.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public IActionResult GenerateNewThreadName()
+    {
+        logger.LogInformation("Called save endpoint at {DateCalled}", DateTime.UtcNow);
+        return Ok(StringHelper.GenerateUniqueName());
+    }
+    
     [HttpPost]
     [Route(DataRoutes.SaveChatRoute)]
     [EndpointSummary("Save chat to the repository.")]

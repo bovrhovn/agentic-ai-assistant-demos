@@ -1,4 +1,4 @@
-﻿const {createApp, ref} = Vue
+﻿const {createApp, ref, computed} = Vue
 const {createVuetify} = Vuetify
 const vuetify = createVuetify();
 // user defined properties
@@ -7,22 +7,35 @@ let isLoading = ref(false);
 let messageText = ref('');
 let email = ref('');
 let threadName = ref('');
+// routes
 let apiBaseUrl = ref('');
+let apiChatRoute = ref('');
 let saveChatRoute = ref('');
+let generateThreadRoute = ref('');
+const saveChatUrl = computed(() => 
+    apiBaseUrl.value + apiChatRoute.value + '/' + saveChatRoute.value);
+const getThreadUrl = computed(() => 
+    apiBaseUrl.value + apiChatRoute.value + '/' + generateThreadRoute.value);
 // vuejs mechanics
 const app = createApp({
     setup() {
         return {
-            createNewThread,
             items,
             isLoading,
             messageText,
             email,
+            //routes
             apiBaseUrl,
+            apiChatRoute,
+            generateThreadRoute,
             threadName,
+            saveChatUrl,
+            getThreadUrl,
+            // methods
             sendChatMessage,
             loadDefaultData,
-            saveChatRoute            
+            saveChatRoute,
+            createNewThread            
         }
     },
     mounted() {

@@ -14,20 +14,30 @@ builder.Services.AddOptions<DataOptions>()
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalHostAndProduction",
+        policy =>
+        {
+            policy.WithOrigins("https://localhost:5009", 
+                    "https://chat.vrhovnik.cloud")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
-var app = builder.Build();
 var dataOptions = builder.Configuration.GetSection(DataOptions.DataSettingsName).Get<DataOptions>()!;
 builder.Services.AddScoped<IChatRepository, CosmosDbChatRepository>(_ =>
     new(dataOptions.DatabaseName, dataOptions.ChatContainer, dataOptions.ConnectionString));
 
+var app = builder.Build();
 if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler($"/{GeneralRoutes.GeneralRoute}/{GeneralRoutes.ErrorRoute}");
-
 app.UseForwardedHeaders();
 app.MapOpenApi();
+app.UseCors("AllowLocalHostAndProduction");
 app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks($"/{GeneralRoutes.HealthRoute}", new HealthCheckOptions
