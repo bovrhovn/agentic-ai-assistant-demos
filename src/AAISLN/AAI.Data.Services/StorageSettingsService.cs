@@ -31,11 +31,11 @@ public class StorageSettingsService : ISettingsService
 
     public async Task<bool> UpdateAsync(AppSettings settings)
     {
-        var currentSettings = await GetAsync(settings.Id);
+        var currentSettings = await GetAsync(settings.AppSettingsId);
         var containerClient = blobServiceClient.GetBlobContainerClient(profileContainerName);
         try
         {
-            var blobClient = containerClient.GetBlobClient(settings.Id);
+            var blobClient = containerClient.GetBlobClient(settings.AppSettingsId);
             var data = JsonConvert.SerializeObject(currentSettings);
             var bytes = Encoding.UTF8.GetBytes(data);
             using var ms = new MemoryStream();
@@ -55,7 +55,7 @@ public class StorageSettingsService : ISettingsService
     public async Task<AppSettings> GetAsync(string settingsId)
     {
         var containerClient = blobServiceClient.GetBlobContainerClient(profileContainerName);
-        var settings = new AppSettings { Id = settingsId };
+        var settings = new AppSettings { AppSettingsId = settingsId };
         if (!await containerClient.ExistsAsync())
             await blobServiceClient.CreateBlobContainerAsync(profileContainerName);
         var blobClient = containerClient.GetBlobClient(settingsId);
@@ -67,7 +67,7 @@ public class StorageSettingsService : ISettingsService
         settings = JsonConvert.DeserializeObject<AppSettings>(downloadedProfile);
         return settings ?? new AppSettings
         {
-            Id = settingsId
+            AppSettingsId = settingsId
         };
     }
 }

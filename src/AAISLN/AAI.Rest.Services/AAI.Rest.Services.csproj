@@ -14,6 +14,8 @@
 
     <ItemGroup>
       <ProjectReference Include="..\AAI.Core\AAI.Core.csproj" />
+      <ProjectReference Include="..\AAI.Data.Services\AAI.Data.Services.csproj" />
+      <ProjectReference Include="..\AAI.Interfaces\AAI.Interfaces.csproj" />
     </ItemGroup>
 
 </Project>

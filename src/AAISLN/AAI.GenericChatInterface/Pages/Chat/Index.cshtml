@@ -1,7 +1,147 @@
 ﻿@page
+@using AAI.Core
+@using AAI.GenericChatInterface.Options
+@using Microsoft.Extensions.Options
 @model AAI.GenericChatInterface.Pages.Chat.IndexPageModel
-
+@inject IOptions<GeneralOptions> GeneralOptionsValue
 @{
     ViewData["Title"] = "Chat with AI Assistant";
 }
 
+<div id="app">
+    <div class="row">
+        <div class="col-12">
+            <div class="mt-2 mb-2">
+                Conversion Name: <b>{{ threadName }}</b>
+            </div>
+            <div class="float-end mt-2 mb-2">
+                <v-btn elevation="2" size="medium" density="compact"
+                       class="m-2" color="primary" prepend-icon="fas fa-plus"
+                       v-on:click="createNewThread">
+                    Create new thread
+                </v-btn>
+            </div>
+        </div>
+    </div>
+    <div v-if="isLoading" class="m-5">
+        <v-skeleton-loader :elevation="6" color="information" type="card"></v-skeleton-loader>
+    </div>
+    <div class="row chat-container" id="chatMessages">
+        <div class="messages d-flex flex-column">
+            <div v-for="item in items" :key="item.id" class="message"
+                 :class="{user: item.type ==='user', assistant: item.type === 'assistant', system: item.type === 'system'}">
+                {{ item.text }}
+                <div class="timestamp">{{ item.timeStamp }}</div>
+            </div>
+            <div v-if="items.length === 0" class="text-center text-muted mt-5">
+                No messages yet. Start the conversation!
+            </div>
+        </div>
+    </div>
+
+    <div class="row input-box">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form v-on:submit.prevent="sendChatMessage">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="Type your message here..."
+                                   v-model="messageText" required>
+                            <v-btn type="submit"
+                                   :disabled="messageText.length <= 5"
+                                   elevation="4" size="large" color="primary"
+                                   prepend-icon="fa-solid fa-paper-plane"
+                                   v-on:click="sendChatMessage">
+                                Send
+                            </v-btn>
+                        </div>
+                        <div class="form-text text-muted">
+                            <div v-if="messageText.length <= 5" class="text-danger">
+                                Type at least 5 characters to send a message.
+                            </div>
+                            <div v-else>
+                                {{ messageText.length }} / <b>@GeneralOptionsValue.Value.MessageLengthLimit</b>
+                                characters typed.
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts
+{
+    @await Html.PartialAsync("_VueJs")
+    @await Html.PartialAsync("_Vuetify")
+    <script>
+        function loadDefaultData() {
+            console.log('Loading default data for chat interface...');
+            apiBaseUrl.value = '@GeneralOptionsValue.Value.ApiBaseUrl';
+            saveChatRoute.value = '@DataRoutes.SaveChatRoute';
+            console.log('API Base URL:', apiBaseUrl.value);
+            threadName.value = '@StringHelper.GenerateUniqueName()';
+            console.log('Thread Name:', threadName.value);
+            email.value = '@User.Identity?.Name';
+            console.log('User Email:', email.value);
+        }
+
+        function createNewThread() {
+            console.log('clearForm function called');
+            isLoading.value = true;
+            messageText.value = '';
+            threadName.value = '@StringHelper.GenerateUniqueName()';
+            items.value = [];
+            isLoading.value = false;
+            const chatMessages = document.getElementById('chatMessages');            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }        
+
+        function sendChatMessage() {
+            console.log('sendChatMessage function called');
+            isLoading.value = true;
+            const urlToSend = apiBaseUrl.value + saveChatRoute.value;
+            console.log('Sending message to:', urlToSend);
+            let parentId = '';
+            if (items.value.length > 0) {
+                parentId = items.value[items.value.length - 1].id;
+                console.log('Parent ID:', parentId);
+            } else {
+                console.log('No previous messages, no parent ID.');
+            }            
+            let sendMessageItem = {
+                email: email.value,
+                text: messageText.value,
+                threadName: threadName.value,
+                parentId:parentId
+            };
+            fetch(urlToSend, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(sendMessageItem)
+            }).then(response => {
+                if (!response.ok) {
+                    console.log("There has been an error while fetching data from the server.");
+                    isLoading.value = false;
+                    return Promise.reject(response);
+                }
+                console.log('Message sent successfully:', response);
+                isLoading.value = false;
+            });
+
+            messageText.value = '';
+        }        
+    </script>
+    <script src="js/chats.js"></script>
+}
+
+@section Head
+{
+    @await Html.PartialAsync("_VuetifyStyles")
+    <link href="/css/chat.css" rel="stylesheet">
+}

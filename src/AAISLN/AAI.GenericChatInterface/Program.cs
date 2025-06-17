@@ -19,6 +19,10 @@ builder.Services.AddOptions<StorageOptions>()
     .Bind(builder.Configuration.GetSection(StorageOptions.AppSettingsName))
     .ValidateDataAnnotations()
     .ValidateOnStart();
+builder.Services.AddOptions<GeneralOptions>()
+    .Bind(builder.Configuration.GetSection(GeneralOptions.GeneralWebName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 // asp.net core features
 builder.Services.AddHealthChecks();
@@ -37,16 +41,15 @@ builder.Services.AddTransient<ILogger>(p =>
 });
 
 //services
-var storageOptions = builder.Configuration.GetSection(StorageOptions.AppSettingsName).Get<StorageOptions>();
-if (storageOptions == null)
-    throw new ArgumentNullException(nameof(storageOptions), "Storage options are not configured properly.");
+var storageOptions = builder.Configuration.GetSection(StorageOptions.AppSettingsName).Get<StorageOptions>()!;
 
 builder.Services.AddScoped<ISettingsService, CosmosDbStorageSettingsService>(_ =>
-    new CosmosDbStorageSettingsService(storageOptions.DatabaseName, storageOptions.SettingsContainer, storageOptions.ConnectionString));
+    new(storageOptions.DatabaseName, storageOptions.SettingsContainer, storageOptions.ConnectionString));
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment()) app.UseExceptionHandler("/Info/Error");
+if (!app.Environment.IsDevelopment())
+    app.UseExceptionHandler($"/{GeneralRoutes.GeneralRoute}/{GeneralRoutes.ErrorRoute}");
 
 app.UseForwardedHeaders();
 app.UseRouting();

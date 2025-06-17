@@ -34,10 +34,10 @@ public class CosmosDbStorageSettingsService : ISettingsService
 
     public async Task<bool> UpdateAsync(AppSettings settings)
     {
-        var profileSettings = await GetProfileSettingsAsync(settings.Id);
+        var profileSettings = await GetProfileSettingsAsync(settings.AppSettingsId);
         profileSettings = profileSettings with { notificationsEnabled = settings.NotificationsEnabled };
         var response =
-            await container.UpsertItemAsync(item: profileSettings, partitionKey: new PartitionKey(settings.Id));
+            await container.UpsertItemAsync(item: profileSettings, partitionKey: new PartitionKey(settings.AppSettingsId));
         if (response.StatusCode != System.Net.HttpStatusCode.OK &&
             response.StatusCode != System.Net.HttpStatusCode.Created)
         {
@@ -71,7 +71,7 @@ public class CosmosDbStorageSettingsService : ISettingsService
         var profileSettings = await GetProfileSettingsAsync(settingsId);
         return new AppSettings
         {
-            Id = profileSettings.email,
+            AppSettingsId = profileSettings.email,
             NotificationsEnabled = profileSettings.notificationsEnabled
         };
     }

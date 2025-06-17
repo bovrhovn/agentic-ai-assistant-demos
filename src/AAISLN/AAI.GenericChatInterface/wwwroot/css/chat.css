@@ -1,0 +1,54 @@
+﻿.chat-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.messages {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 150px; /* space for sticky input */
+}
+
+.message {
+    max-width: 75%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.message.user {
+    background-color: #d1e7dd;
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.message.bot {
+    background-color: #e2e3e5;
+    align-self: flex-start;
+    margin-right: auto;
+}
+
+.message.system {
+    background-color: #e2e3e5;
+    align-self: flex-start;
+    margin-right: auto;
+}
+
+.timestamp {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 5px;
+    text-align: right;
+}
+
+.input-box {
+    position: sticky;
+    bottom: 50px;
+    background: #fff;
+    padding: 10px;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+    border-radius: 10px;
+}

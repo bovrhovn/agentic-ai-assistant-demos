@@ -1,2 +1,5 @@
-### health check
+### general health check if system works
 GET {{ base-url}}/health
+    
+### chat repository health check
+GET {{ base-url}}/chat/health
