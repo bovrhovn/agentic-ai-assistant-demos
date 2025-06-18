@@ -6,6 +6,15 @@ using Microsoft.Azure.Cosmos;
 
 namespace AAI.Data.Services;
 
+internal record ChatModel(
+    string id,
+    string email,
+    string threadName,
+    string parentId,
+    string text,
+    int modelType,
+    DateTime createdAt);
+
 public class CosmosDbChatRepository : IChatRepository
 {
     private readonly Container container;
@@ -29,27 +38,18 @@ public class CosmosDbChatRepository : IChatRepository
             .GetAwaiter().GetResult();
         container = settingDatabase.GetContainer(containerName);
         container.Database.CreateContainerIfNotExistsAsync(new ContainerProperties
-            {
-                Id = containerName,
-                PartitionKeyPaths = ["/email", "/threadName"]
-            }).GetAwaiter().GetResult();
+        {
+            Id = containerName,
+            PartitionKeyPaths = ["/email", "/threadName"]
+        }).GetAwaiter().GetResult();
     }
-
-    private record ChatModel(
-        string id,
-        string email,
-        string threadName,
-        string parentId,
-        string text,
-        int modelType,
-        DateTime createdAt);
 
     public async Task<List<Chat>> GetForUserAsync(string userId)
     {
         // Build query definition
         var parameterizedQuery = new QueryDefinition(
-                query: "SELECT * FROM chats p WHERE p.email = @email ORDER BY p.threadName"
-            ).WithParameter("@email", userId);
+            query: "SELECT * FROM chats p WHERE p.email = @email ORDER BY p.threadName"
+        ).WithParameter("@email", userId);
         using var filteredFeed = container.GetItemQueryIterator<ChatModel>(
             queryDefinition: parameterizedQuery
         );
@@ -64,21 +64,53 @@ public class CosmosDbChatRepository : IChatRepository
                 UserId = item.email,
                 ThreadName = item.threadName,
                 ChatId = item.id,
-                ParentChat = new Chat { 
-                    ChatId = item.parentId, 
-                    ThreadName = item.threadName, 
-                    UserId = item.email, Text = string.Empty },
+                ParentChat = new Chat
+                {
+                    ChatId = item.parentId,
+                    ThreadName = item.threadName,
+                    UserId = item.email, Text = string.Empty
+                },
                 Text = item.text,
                 ChatType = (ChatModelType)item.modelType,
                 DatePosted = item.createdAt
             }));
         }
+
         return list;
     }
 
-    public Task<List<Chat>> GetForThreadAsync(string threadName)
+    public async Task<List<Chat>> GetForThreadAsync(string threadName)
     {
-        throw new NotImplementedException();
+        var parameterizedQuery = new QueryDefinition(
+            query: "SELECT * FROM chats p WHERE p.threadName = @threadName ORDER BY p.createdAt ASC"
+        ).WithParameter("@threadName", threadName);
+        using var filteredFeed = container.GetItemQueryIterator<ChatModel>(
+            queryDefinition: parameterizedQuery
+        );
+        // Iterate query result pages
+        var list = new List<Chat>();
+        while (filteredFeed.HasMoreResults)
+        {
+            var response = await filteredFeed.ReadNextAsync();
+            // Iterate query results
+            list.AddRange(response.Select(item => new Chat
+            {
+                UserId = item.email,
+                ThreadName = item.threadName,
+                ChatId = item.id,
+                ParentChat = new Chat
+                {
+                    ChatId = item.parentId,
+                    ThreadName = item.threadName,
+                    UserId = item.email, Text = string.Empty
+                },
+                Text = item.text,
+                ChatType = (ChatModelType)item.modelType,
+                DatePosted = item.createdAt
+            }));
+        }
+
+        return list;
     }
 
     public async Task<bool> SaveAsync(Chat chat)

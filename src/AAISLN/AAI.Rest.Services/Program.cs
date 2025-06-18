@@ -19,7 +19,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowLocalHostAndProduction",
         policy =>
         {
-            policy.WithOrigins("https://localhost:5009", 
+            policy.WithOrigins("https://localhost:5009",
                     "https://chat.vrhovnik.cloud")
                 .AllowAnyHeader()
                 .AllowAnyMethod();
@@ -29,12 +29,19 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
 var dataOptions = builder.Configuration.GetSection(DataOptions.DataSettingsName).Get<DataOptions>()!;
-builder.Services.AddScoped<IChatRepository, CosmosDbChatRepository>(_ =>
-    new(dataOptions.DatabaseName, dataOptions.ChatContainer, dataOptions.ConnectionString));
+var cosmosDbChatRepository =
+    new CosmosDbChatRepository(dataOptions.DatabaseName, dataOptions.ChatContainer, dataOptions.ConnectionString);
+builder.Services.AddScoped<IChatRepository, CosmosDbChatRepository>(_ => cosmosDbChatRepository);
+builder.Services.AddScoped<IBotService, SingleAgentBotService>(_ =>
+    new(cosmosDbChatRepository, dataOptions.AgentsProject, dataOptions.DeploymentName));
 
 var app = builder.Build();
 if (!app.Environment.IsDevelopment())
+{
     app.UseExceptionHandler($"/{GeneralRoutes.GeneralRoute}/{GeneralRoutes.ErrorRoute}");
+    app.UseHttpsRedirection();
+}
+
 app.UseForwardedHeaders();
 app.MapOpenApi();
 app.UseCors("AllowLocalHostAndProduction");

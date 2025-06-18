@@ -9,9 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AAI.Rest.Services.Controllers;
 
-[ApiController, Route(GeneralRoutes.ChatRoute), 
+[ApiController, Route(GeneralRoutes.ChatRoute),
  AllowAnonymous, Produces(MediaTypeNames.Application.Json)]
-public class ChatController(ILogger<ChatController> logger, IChatRepository chatRepository) : ControllerBase
+public class ChatController(ILogger<ChatController> logger, IChatRepository chatRepository, IBotService botService)
+    : ControllerBase
 {
     [HttpGet]
     [Route(DataRoutes.GenerateThreadNameRoute)]
@@ -24,7 +25,7 @@ public class ChatController(ILogger<ChatController> logger, IChatRepository chat
         logger.LogInformation("Called generate new thread endpoint at {DateCalled}", DateTime.UtcNow);
         return Ok(StringHelper.GenerateUniqueName());
     }
-    
+
     [HttpGet]
     [Route(DataRoutes.GetHistoryRoute + "/{email}")]
     [EndpointSummary("Get history chats for user based on primary key.")]
@@ -40,10 +41,11 @@ public class ChatController(ILogger<ChatController> logger, IChatRepository chat
             logger.LogInformation("No chat history found for user {Email} at {DateCalled}", email, DateTime.UtcNow);
             return NotFound($"No chat history found for user {email}.");
         }
+
         logger.LogInformation("Found {Count} items for {Email}", items.Count, email);
         return Ok(items);
     }
-    
+
     [HttpPost]
     [Route(DataRoutes.SaveChatRoute)]
     [EndpointSummary("Save chat to the repository.")]
@@ -53,6 +55,7 @@ public class ChatController(ILogger<ChatController> logger, IChatRepository chat
     public async Task<IActionResult> SaveChatAsync([FromBody] ChatDto chatDto)
     {
         logger.LogInformation("Called save endpoint at {DateCalled}", DateTime.UtcNow);
+        //saving user sent chat to history
         var chat = new Chat
         {
             ChatId = Guid.NewGuid().ToString(),
@@ -62,16 +65,36 @@ public class ChatController(ILogger<ChatController> logger, IChatRepository chat
             ParentChat = new Chat
             {
                 ChatId = chatDto.ParentId,
-                UserId = chatDto.Email, 
+                UserId = chatDto.Email,
                 Text = "",
                 ThreadName = chatDto.ThreadName
             },
             DatePosted = new DateTime()
         };
-        if (!await chatRepository.SaveAsync(chat)) return BadRequest($"Failed to save chat at {DateTime.Now}.");
+        try
+        {
+            await chatRepository.SaveAsync(chat); 
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to save chat for user {Email} at {DateCalled}", chatDto.Email, DateTime.UtcNow);
+            return BadRequest($"Failed to save chat at {DateTime.Now}.");
+        }
 
-        logger.LogInformation("Chat saved successfully at {DateSaved}", DateTime.UtcNow);
-        return Ok();
+        logger.LogInformation("Chat saved successfully for user {Email} at {DateSaved}", chatDto.Email,
+            DateTime.UtcNow);
+        try
+        {
+            //get answer from the bot service, save it to the chat repository and return the data
+            var botMessage = await botService.GetResponseAsync(chatDto.Text, chatDto.ThreadName, chatDto.Email);
+            logger.LogInformation("Chat saved successfully at {DateSaved}", DateTime.UtcNow);
+            return Ok(botMessage);
+        }
+        catch (Exception e)
+        {
+            logger.LogWarning("Bot response is empty for user {Email} at {DateCalled}", chatDto.Email, DateTime.UtcNow);
+            return BadRequest($"Failed to get bot response at {DateTime.Now}.");
+        }
     }
 
     [HttpGet]

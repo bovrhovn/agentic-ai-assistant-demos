@@ -27,8 +27,13 @@ builder.Services.AddOptions<GeneralOptions>()
 
 // asp.net core features
 builder.Services.AddHealthChecks();
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
+builder.Services.Configure<ForwardedHeadersOptions>(options=>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor |
+                               ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
 builder.Services.AddAuthorization(options => { options.FallbackPolicy = options.DefaultPolicy; });
@@ -50,13 +55,16 @@ builder.Services.AddHttpClient<ChatHttpService>();
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
+{
     app.UseExceptionHandler($"/{GeneralRoutes.GeneralRoute}/{GeneralRoutes.ErrorRoute}");
+    app.UseHttpsRedirection();
+}
 
-app.UseForwardedHeaders();
 app.UseRouting();
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseForwardedHeaders();
 app.UseExceptionHandler(options =>
 {
     options.Run(async context =>
