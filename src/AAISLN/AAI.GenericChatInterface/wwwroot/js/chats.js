@@ -52,7 +52,37 @@ app.use(vuetify).mount('#app');
 
 function loadThreadData(){
     console.log('loadThreadData function with threadName '+ threadName.value + ' and called to url ' + getLoadThreadItemsUrl.value);
-    
+    isLoading.value = true;
+    const getUrl = getLoadThreadItemsUrl.value + "/" + threadName.value;
+    fetch(getUrl, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    }).then(response => {
+        if (!response.ok) {
+            console.log("There has been an error while fetching data from the server.");
+            isLoading.value = false;
+            return Promise.reject(response);
+        }
+        return response.json(); // Parse the JSON from the response
+    }).then(response => {
+        console.log('Message received successfully:', response);
+        response.forEach(msg => {
+            items.value.push({
+                id: msg.id,
+                parentId: msg.parentId,
+                text: msg.text,
+                sender: msg.sender,
+                timeStamp: msg.timeStamp
+            });
+        });
+        isLoading.value = false;
+    }).catch(error => {
+        console.error('Unable to get messages for thread from service.', error);
+        isLoading.value = false;
+    });
 }
 
 function sendChatMessage() {
@@ -93,7 +123,7 @@ function sendChatMessage() {
                 id: msg.id,
                 parentId: msg.parentId,
                 text: msg.text,
-                type: msg.type,
+                sender: msg.sender,
                 timeStamp: msg.timeStamp
             });
         });       

@@ -49,8 +49,8 @@ public class ChatController(ILogger<ChatController> logger, IChatRepository chat
         foreach (var item in items)
         {
             list.Add(new ChatItem(item.ChatId,
-                item.Text,
                 item.ParentId,
+                item.Text,
                 item.ChatType.ToString().ToLowerInvariant(),
                 item.DatePosted.ToString("o")));
         }
@@ -58,7 +58,7 @@ public class ChatController(ILogger<ChatController> logger, IChatRepository chat
         return Ok(list);
     }
 
-    private record ChatItem(string id, string parentId, string text, string messageType, string timeStamp);
+    private record ChatItem(string id, string parentId, string text, string sender, string timeStamp);
 
     [HttpPost]
     [Route(DataRoutes.SaveChatRoute)]
@@ -102,8 +102,8 @@ public class ChatController(ILogger<ChatController> logger, IChatRepository chat
             return Ok(new[]
             {
                 new ChatItem(chat.ChatId,
-                    chat.Text,
                     chat.ParentId,
+                    chat.Text,
                     chat.ChatType.ToString().ToLowerInvariant(),
                     chat.DatePosted.ToString("o")),
                 new ChatItem(botMessage.ChatId,

@@ -11,30 +11,23 @@
     padding-bottom: 150px; /* space for sticky input */
 }
 
-.message {
-    max-width: 75%;
-    padding: 10px 15px;
-    border-radius: 15px;
-    margin-bottom: 10px;
-    position: relative;
+
+.timeline-row {
+    margin: 2rem 0;
 }
 
-.message.user {
-    background-color: #d1e7dd;
-    align-self: flex-end;
+.card-left {
+    margin-right: auto;    
+}
+
+.card-right {
+    text-align: end;
     margin-left: auto;
 }
 
-.message.bot {
-    background-color: #e2e3e5;
-    align-self: flex-start;
-    margin-right: auto;
-}
-
-.message.system {
-    background-color: #e2e3e5;
-    align-self: flex-start;
-    margin-right: auto;
+.card {
+    width: 100%;
+    margin-bottom: 5px;
 }
 
 .timestamp {

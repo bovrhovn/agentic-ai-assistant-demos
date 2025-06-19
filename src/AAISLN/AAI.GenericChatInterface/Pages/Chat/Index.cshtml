@@ -14,7 +14,7 @@
         <div class="col-12">
             <div class="mt-2 mb-2">
                 Conversion Name: <b>{{ threadName }}</b> (<a asp-page="/Profile/ChatHistory">check history</a>) <br>
-                Bot Mode: <b>@Model.UserSettings.BotMode.Name</b> (<a asp-page="/Profile/My">change mode</a>) 
+                Bot Mode: <b>@Model.UserSettings.BotMode.Name</b> (<a asp-page="/Profile/My">change mode</a>)
             </div>
             <div class="float-end m-2">
                 <v-btn size="large" density="compact"
@@ -29,19 +29,27 @@
     <div v-if="isLoading" class="m-5">
         <v-skeleton-loader :elevation="6" color="info" type="card-avatar"></v-skeleton-loader>
     </div>
-    <div class="row chat-container" id="chatMessages">
-        <div class="messages d-flex flex-column">
-            <div v-for="item in items" :key="item.id" class="message"
-                 :class="{user: item.messageType ==='user', assistant: item.messageType === 'assistant', system: item.messageType === 'system'}">
-                {{ item.text }}
-                <div class="timestamp">{{ item.timeStamp }}</div>
-            </div>
-            <div v-if="items.length === 0" class="text-center text-muted mt-5">
-                No messages yet. Start the conversation by sending message to the server!
+
+    <div class="container chat-container" id="chatMessages">
+        <div class="row timeline-row">
+            <div v-for="item in items" :key="item.id"
+                 class="col-12">
+                <div class="card"
+                     :class="{ 'card-right': item.sender === 'user', 'card-left': item.sender !== 'user' }">
+                    <div class="card-header bg-transparent"><b>{{ item.sender }}</b></div>
+                    <div class="card-body">
+                        <p class="card-text">{{ item.text }}</p>
+                    </div>
+                    <div class="card-footer text-body-secondary">
+                        <span class="float-end">{{ item.timeStamp }}</span>
+                    </div>
+                </div>
             </div>
         </div>
+        <div v-if="items.length === 0" class="text-center text-muted mt-5">
+            No messages yet. Start the conversation by sending message to the server!
+        </div>
     </div>
-
     <div class="row input-box">
         <div class="col-12">
             <form v-on:submit.prevent="sendChatMessage">
@@ -90,15 +98,16 @@
             let foundThreadName = url.searchParams.get('threadName');
             console.log('Found thread name in query:', foundThreadName);
             // 2. If not found in query, check the path (e.g., /Index/MyThread)
-            if (!foundThreadName) {
-                console.log('Found thread name in route:', foundThreadName);
+            if (foundThreadName) {
+                threadName.value = foundThreadName;
+            } else {
                 const pathSegments = url.pathname.split('/').filter(Boolean);
                 const threadIndex = pathSegments.findIndex(segment => segment.toLowerCase() === 'index');
                 if (threadIndex !== -1 && pathSegments.length > threadIndex + 1) {
                     threadName.value = pathSegments[threadIndex + 1];
-                }                
+                }
             }
-            else {
+            if (threadName.value === '') {
                 threadName.value = '@StringHelper.GenerateUniqueName()';
             }
             loadThreadData();
