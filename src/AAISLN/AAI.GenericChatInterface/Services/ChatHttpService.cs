@@ -11,7 +11,6 @@ public class ChatHttpService(
     ILogger<ChatHttpService> logger,
     HttpClient client,
     IOptions<GeneralOptions> generalOptions)
-
 {
     public async Task<List<ChatHistoryViewModel>> GetHistoryAsync(string userId)
     {
@@ -31,10 +30,10 @@ public class ChatHttpService(
                     {
                         ThreadName = group.Key,
                         MessageCount = group.Count(),
-                        BotMessageCount = group.Select(msg =>
-                            msg.ChatType is ChatModelType.System or ChatModelType.Assistant).Count(),
-                        UserMessageCount = group.Select(msg =>
-                            msg.ChatType is ChatModelType.User).Count()
+                        BotMessageCount = group.Count(msg =>
+                            msg.ChatType is ChatModelType.System or ChatModelType.Assistant),
+                        UserMessageCount = group.Count(msg =>
+                            msg.ChatType is ChatModelType.User)
                     }
                 ).ToList();
         }

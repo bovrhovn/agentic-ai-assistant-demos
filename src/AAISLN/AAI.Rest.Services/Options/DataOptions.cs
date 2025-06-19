@@ -12,6 +12,8 @@ public class DataOptions
     public string DatabaseName { get; init; } = "aaidb";
     [Required(ErrorMessage = "Agent project URI is required settings")]
     public required string AgentsProjectUri { get; init; }
+    [Required(ErrorMessage = "Azure OpenAI base URI is required settings")]
+    public required string AzureOpenAIBaseURI { get; init; }
     [Required(ErrorMessage = "Deployment name is required settings")]
     public required string DeploymentName { get; init; }="gpt-4o";
 }

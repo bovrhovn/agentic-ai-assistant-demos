@@ -7,6 +7,10 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddOptions<StorageOptions>()
+    .Bind(builder.Configuration.GetSection(StorageOptions.AppSettingsName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 builder.Services.AddOptions<DataOptions>()
     .Bind(builder.Configuration.GetSection(DataOptions.DataSettingsName))
     .ValidateDataAnnotations()
@@ -18,8 +22,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowLocalHostAndProduction",
         policy =>
         {
-            policy.WithOrigins("https://localhost:5009",
-                    "https://chat.vrhovnik.cloud")
+            policy.WithOrigins("https://localhost:5009", "https://chat.vrhovnik.cloud")
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
@@ -27,12 +30,15 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
+var storageOptions = builder.Configuration.GetSection(StorageOptions.AppSettingsName).Get<StorageOptions>()!;
+builder.Services.AddScoped<ISettingsService, CosmosDbSettingsService>(_ =>
+    new(storageOptions.DatabaseName, storageOptions.SettingsContainer, storageOptions.ConnectionString));
 var dataOptions = builder.Configuration.GetSection(DataOptions.DataSettingsName).Get<DataOptions>()!;
 var cosmosDbChatRepository =
     new CosmosDbChatRepository(dataOptions.DatabaseName, dataOptions.ChatContainer, dataOptions.ConnectionString);
 builder.Services.AddScoped<IChatRepository, CosmosDbChatRepository>(_ => cosmosDbChatRepository);
-builder.Services.AddScoped<IBotService, AzureOpenAIChatService>(_ =>
-    new(cosmosDbChatRepository, dataOptions.AgentsProjectUri, dataOptions.DeploymentName));
+builder.Services.AddScoped<IAzureOpenAIBotService, AzureOpenAIChatService>(_ =>
+    new(cosmosDbChatRepository, dataOptions.AzureOpenAIBaseURI, dataOptions.DeploymentName));
 
 var app = builder.Build();
 if (!app.Environment.IsDevelopment())

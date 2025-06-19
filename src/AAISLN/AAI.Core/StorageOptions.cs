@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AAI.GenericChatInterface.Options;
+namespace AAI.Core;
 
 public class StorageOptions
 {

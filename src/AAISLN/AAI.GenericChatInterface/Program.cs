@@ -1,7 +1,6 @@
 using System.Net;
 using AAI.Core;
 using AAI.Data.Services;
-using AAI.GenericChatInterface.Helpers;
 using AAI.GenericChatInterface.Options;
 using AAI.GenericChatInterface.Services;
 using AAI.Interfaces;

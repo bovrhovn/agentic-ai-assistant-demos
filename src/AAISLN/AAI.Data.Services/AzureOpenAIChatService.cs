@@ -6,25 +6,25 @@ using OpenAI.Chat;
 
 namespace AAI.Data.Services;
 
-public class AzureOpenAIChatService : IBotService
+public class AzureOpenAIChatService : IAzureOpenAIBotService
 {
     private readonly IChatRepository chatRepository;
     private readonly string deploymentName;
     private readonly AzureOpenAIClient client;
 
-    public AzureOpenAIChatService(IChatRepository chatRepository, string projectEndpoint, string deploymentName)
+    public AzureOpenAIChatService(IChatRepository chatRepository, string deploymentURI, string deploymentName)
     {
         this.chatRepository = chatRepository;
         this.deploymentName = deploymentName;
         var defaultAzureCredential = new DefaultAzureCredential(
             new DefaultAzureCredentialOptions
             {
-                ExcludeAzureCliCredential = true,
+                ExcludeAzureCliCredential = false,
                 ExcludeEnvironmentCredential = true,
                 ExcludeManagedIdentityCredential = false,
                 ExcludeVisualStudioCredential = true
             });
-        client = new(new Uri(projectEndpoint), defaultAzureCredential);
+        client = new(new Uri(deploymentURI), defaultAzureCredential);
     }
 
     public async Task<Chat> GetResponseAsync(string userInput, string conversationId, string userId,
@@ -83,7 +83,8 @@ public class AzureOpenAIChatService : IBotService
             ChatType = ChatModelType.Assistant,
             DatePosted = DateTime.Now
         };
-        //save to history
+        //save to history and return the model
+        // OPTIMIZE: send to queue for async processing
         await chatRepository.SaveAsync(model);
         return model;
     }

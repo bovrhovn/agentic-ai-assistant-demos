@@ -1,6 +1,9 @@
 ### get new thread name
 GET {{ base-url}}/chat/generate-thread-name
 
+### get thread data based on emails
+GET {{ base-url}}/chat/get-history/{{ testEmail }}
+    
 ### get chat items based on thread id
 GET {{ base-url}}/chat/get-thread-data/{{ testThreadName }}
 

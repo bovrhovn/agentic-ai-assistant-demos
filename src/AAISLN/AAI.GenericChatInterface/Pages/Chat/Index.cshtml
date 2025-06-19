@@ -1,7 +1,6 @@
 ﻿@page
 @using AAI.Core
 @using AAI.GenericChatInterface.Options
-@using AAI.Interfaces
 @using Microsoft.Extensions.Options
 @model AAI.GenericChatInterface.Pages.Chat.IndexPageModel
 @inject IOptions<GeneralOptions> GeneralOptionsValue
@@ -15,7 +14,7 @@
         <div class="col-12">
             <div class="mt-2 mb-2">
                 Conversion Name: <b>{{ threadName }}</b> (<a asp-page="/Profile/ChatHistory">check history</a>) <br>
-                Bot Mode: <b>{{ @Model.UserSettings.BotMode.Name }}</b> (<a asp-page="/Profile/My">change mode</a>) 
+                Bot Mode: <b>@Model.UserSettings.BotMode.Name</b> (<a asp-page="/Profile/My">change mode</a>) 
             </div>
             <div class="float-end m-2">
                 <v-btn size="large" density="compact"
@@ -78,12 +77,31 @@
     <script>
         function loadDefaultData() {
             console.log('Loading default data for chat interface...');
+            //set initial values from server-side variables
             apiBaseUrl.value = '@GeneralOptionsValue.Value.ApiBaseUrl';
             saveChatRoute.value = '@DataRoutes.SaveChatRoute';
             generateThreadRoute.value = '@DataRoutes.GenerateThreadNameRoute';
+            loadThreadItemsRoute.value = '@DataRoutes.GetThreadDataRoute';
             apiChatRoute.value = '@GeneralRoutes.ChatRoute';
-            threadName.value = '@StringHelper.GenerateUniqueName()';
-            email.value = '@User.Identity?.Name';            
+            email.value = '@User.Identity?.Name';
+            // check if thread name is provided in the URL
+            const url = new URL(window.location.href);
+            // 1. Check query string (e.g., ?threadname=MyThread)
+            let foundThreadName = url.searchParams.get('threadName');
+            console.log('Found thread name in query:', foundThreadName);
+            // 2. If not found in query, check the path (e.g., /Index/MyThread)
+            if (!foundThreadName) {
+                console.log('Found thread name in route:', foundThreadName);
+                const pathSegments = url.pathname.split('/').filter(Boolean);
+                const threadIndex = pathSegments.findIndex(segment => segment.toLowerCase() === 'index');
+                if (threadIndex !== -1 && pathSegments.length > threadIndex + 1) {
+                    threadName.value = pathSegments[threadIndex + 1];
+                }                
+            }
+            else {
+                threadName.value = '@StringHelper.GenerateUniqueName()';
+            }
+            loadThreadData();
         }
     </script>
     <script src="js/chats.js"></script>

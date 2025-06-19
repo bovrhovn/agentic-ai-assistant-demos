@@ -11,11 +11,15 @@ let threadName = ref('');
 let apiBaseUrl = ref('');
 let apiChatRoute = ref('');
 let saveChatRoute = ref('');
+let loadThreadItemsRoute = ref('');
 let generateThreadRoute = ref('');
+//full routes
 const saveChatUrl = computed(() =>
     apiBaseUrl.value + apiChatRoute.value + '/' + saveChatRoute.value);
 const getThreadUrl = computed(() =>
     apiBaseUrl.value + apiChatRoute.value + '/' + generateThreadRoute.value);
+const getLoadThreadItemsUrl = computed(() =>
+    apiBaseUrl.value + apiChatRoute.value + '/' + loadThreadItemsRoute.value);
 // vuejs mechanics
 const app = createApp({
     setup() {
@@ -35,7 +39,8 @@ const app = createApp({
             sendChatMessage,
             loadDefaultData,
             saveChatRoute,
-            createNewThread
+            createNewThread,
+            loadThreadData
         }
     },
     mounted() {
@@ -44,6 +49,11 @@ const app = createApp({
     }
 });
 app.use(vuetify).mount('#app');
+
+function loadThreadData(){
+    console.log('loadThreadData function with threadName '+ threadName.value + ' and called to url ' + getLoadThreadItemsUrl.value);
+    
+}
 
 function sendChatMessage() {
     console.log('sendChatMessage function called');
@@ -55,12 +65,13 @@ function sendChatMessage() {
     } else {
         console.log('No previous messages, no parent ID.');
     }
+    
     let sendMessageItem = {
         email: email.value,
         text: messageText.value,
         threadName: threadName.value,
         parentId: parentId
-    };
+    };    
     fetch(saveChatUrl.value, {
         method: 'POST',
         headers: {
@@ -77,13 +88,15 @@ function sendChatMessage() {
         return response.json(); // Parse the JSON from the response
     }).then(response => {
         console.log('Message sent successfully:', response);
-        // Add the new message to the items array
-        items.value.push({
-            id: response.id,
-            text: response.text,
-            type: response.type,
-            timeStamp: response.timeStamp
-        });
+        response.forEach(msg => {
+            items.value.push({
+                id: msg.id,
+                parentId: msg.parentId,
+                text: msg.text,
+                type: msg.type,
+                timeStamp: msg.timeStamp
+            });
+        });       
         isLoading.value = false;
     }).catch(error => {
         console.error('Unable to get message from service.', error);

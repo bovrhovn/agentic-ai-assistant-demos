@@ -8,7 +8,7 @@ public class ChatHistoryPageModel(ILogger<ChatHistoryPageModel> logger, ChatHttp
 {
     public async Task OnGetAsync()
     {
-        var userEmail = User?.Identity?.Name;
+        var userEmail = User?.Identity?.Name!;
         logger.LogInformation("ChatHistory page accessed by user {Email}.", userEmail);
         ChatHistoryList = await chatHttpService.GetHistoryAsync(userEmail);
         logger.LogInformation("Retrieved {Count} chat history items for user {Email}.", 

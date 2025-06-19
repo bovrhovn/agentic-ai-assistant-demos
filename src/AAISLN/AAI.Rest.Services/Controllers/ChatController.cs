@@ -4,14 +4,14 @@ using AAI.Interfaces;
 using AAI.Models;
 using AAI.Rest.Services.DtoModels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AAI.Rest.Services.Controllers;
 
 [ApiController, Route(GeneralRoutes.ChatRoute),
  AllowAnonymous, Produces(MediaTypeNames.Application.Json)]
-public class ChatController(ILogger<ChatController> logger, IChatRepository chatRepository, IBotService botService)
+public class ChatController(ILogger<ChatController> logger, IChatRepository chatRepository, 
+    IAzureOpenAIBotService botService)
     : ControllerBase
 {
     [HttpGet]
@@ -20,7 +20,7 @@ public class ChatController(ILogger<ChatController> logger, IChatRepository chat
     [EndpointDescription(
         "This endpoint is used to get the chat history for a user based on their email address. It is used by the AAI chat interface to display the chat history.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetHistoryAsync(string email)
+    public async Task<IActionResult> GetHistoryAsync([FromRoute]string email)
     {
         logger.LogInformation("Called get history endpoint at {DateCalled}", DateTime.UtcNow);
         var items = await chatRepository.GetForUserAsync(email);
@@ -50,6 +50,7 @@ public class ChatController(ILogger<ChatController> logger, IChatRepository chat
         {
             list.Add(new ChatItem(item.ChatId,
                 item.Text,
+                item.ParentId,
                 item.ChatType.ToString().ToLowerInvariant(),
                 item.DatePosted.ToString("o")));
         }
@@ -57,7 +58,7 @@ public class ChatController(ILogger<ChatController> logger, IChatRepository chat
         return Ok(list);
     }
 
-    private record ChatItem(string id, string text, string messageType, string timeStamp);
+    private record ChatItem(string id, string parentId, string text, string messageType, string timeStamp);
 
     [HttpPost]
     [Route(DataRoutes.SaveChatRoute)]
@@ -65,6 +66,9 @@ public class ChatController(ILogger<ChatController> logger, IChatRepository chat
     [EndpointDescription(
         "This endpoint is used to save a chat to the repository. It is used by the AAI chat interface to save the chat history.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [Produces(MediaTypeNames.Application.Json)]
     public async Task<IActionResult> SaveChatAsync([FromBody] ChatDto chatDto)
     {
         logger.LogInformation("Called save endpoint at {DateCalled}", DateTime.UtcNow);
@@ -95,15 +99,25 @@ public class ChatController(ILogger<ChatController> logger, IChatRepository chat
             //get answer from the bot service, save it to the chat repository and return the data
             var botMessage = await botService.GetResponseAsync(chatDto.Text, chatDto.ThreadName, chatDto.Email);
             logger.LogInformation("Chat saved successfully at {DateSaved}", DateTime.UtcNow);
-            return Ok(new ChatItem(botMessage.ChatId,
-                botMessage.Text,
-                botMessage.ChatType.ToString().ToLowerInvariant(),
-                botMessage.DatePosted.ToString("o")));
+            return Ok(new[]
+            {
+                new ChatItem(chat.ChatId,
+                    chat.Text,
+                    chat.ParentId,
+                    chat.ChatType.ToString().ToLowerInvariant(),
+                    chat.DatePosted.ToString("o")),
+                new ChatItem(botMessage.ChatId,
+                    botMessage.ParentId,
+                    botMessage.Text,
+                    botMessage.ChatType.ToString().ToLowerInvariant(),
+                    botMessage.DatePosted.ToString("o"))
+            });
         }
         catch (Exception e)
         {
-            logger.LogWarning("Bot response is empty for user {Email} at {DateCalled}", chatDto.Email, DateTime.UtcNow);
-            return BadRequest($"Failed to get bot response at {DateTime.Now}.");
+            logger.LogWarning("Bot response is empty for user {Email} at {DateCalled} with error message {ErrorMessage}", 
+                chatDto.Email, DateTime.UtcNow, e.Message);
+            return BadRequest($"Failed to get bot response at {DateTime.Now} with {e.Message}.");
         }
     }
 
