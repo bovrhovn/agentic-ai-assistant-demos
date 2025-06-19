@@ -21,6 +21,22 @@
             Enable notifications
         </label>
     </div>
+    <div class="mb-3">
+        <label asp-for="MySettings.BotMode.BotModeId" class="form-label">Choose bot mode</label>
+        <select class="form-select" aria-label="bot mode" asp-for="MySettings.BotMode.BotModeId">
+            @foreach (var botMode in Model.BotModes)
+            {
+                if (botMode.BotModeId == Model.MySettings.BotMode.BotModeId)
+                {
+                    <option value="@botMode.BotModeId" selected>@botMode.Name</option>
+                }
+                else
+                {
+                    <option value="@botMode.BotModeId">@botMode.Name</option>
+                }
+            }
+        </select>
+    </div>
     <button class="btn btn-primary" type="submit">Save <i class="fa-solid fa-floppy-disk"></i></button>
 </form>
 

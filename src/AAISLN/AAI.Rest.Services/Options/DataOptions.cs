@@ -10,8 +10,8 @@ public class DataOptions
     [Required(ErrorMessage = "Chat container name is required settings")]
     public required string ChatContainer { get; init; }
     public string DatabaseName { get; init; } = "aaidb";
-    [Required(ErrorMessage = "Chat container name is required settings")]
-    public required string AgentsProject { get; init; }
+    [Required(ErrorMessage = "Agent project URI is required settings")]
+    public required string AgentsProjectUri { get; init; }
     [Required(ErrorMessage = "Deployment name is required settings")]
     public required string DeploymentName { get; init; }="gpt-4o";
 }

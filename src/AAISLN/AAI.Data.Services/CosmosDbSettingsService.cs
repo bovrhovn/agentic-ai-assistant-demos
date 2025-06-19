@@ -6,14 +6,13 @@ using Microsoft.Azure.Cosmos;
 
 namespace AAI.Data.Services;
 
-public class CosmosDbStorageSettingsService : ISettingsService
+public class CosmosDbSettingsService : ISettingsService
 {
     private readonly Container container;
 
-    public CosmosDbStorageSettingsService(string database, string containerName,
+    public CosmosDbSettingsService(string database, string containerName,
         string serviceUrl)
     {
-        // Initialize Cosmos DB client and database connection here
         var defaultAzureCredential = new DefaultAzureCredential(
             new DefaultAzureCredentialOptions
             {
@@ -25,19 +24,24 @@ public class CosmosDbStorageSettingsService : ISettingsService
         CosmosClient cosmosClient = new(accountEndpoint: serviceUrl,
             tokenCredential: defaultAzureCredential);
         var settingDatabase = cosmosClient.GetDatabase(database);
-        cosmosClient.CreateDatabaseIfNotExistsAsync(database)
-            .GetAwaiter().GetResult();
+        // cosmosClient.CreateDatabaseIfNotExistsAsync(database)
+        //     .GetAwaiter().GetResult();
         container = settingDatabase.GetContainer(containerName);
-        container.Database.CreateContainerIfNotExistsAsync(containerName, "/email")
-            .GetAwaiter().GetResult();
+        // container.Database.CreateContainerIfNotExistsAsync(containerName, "/email")
+        //     .GetAwaiter().GetResult();
     }
 
     public async Task<bool> UpdateAsync(AppSettings settings)
     {
         var profileSettings = await GetProfileSettingsAsync(settings.AppSettingsId);
-        profileSettings = profileSettings with { notificationsEnabled = settings.NotificationsEnabled };
+        profileSettings = profileSettings with
+        {
+            notificationsEnabled = settings.NotificationsEnabled, 
+            botModeId = settings.BotMode.BotModeId
+        };
         var response =
-            await container.UpsertItemAsync(item: profileSettings, partitionKey: new PartitionKey(settings.AppSettingsId));
+            await container.UpsertItemAsync(item: profileSettings,
+                partitionKey: new PartitionKey(settings.AppSettingsId));
         if (response.StatusCode != System.Net.HttpStatusCode.OK &&
             response.StatusCode != System.Net.HttpStatusCode.Created)
         {
@@ -60,7 +64,7 @@ public class CosmosDbStorageSettingsService : ISettingsService
         catch (Exception e)
         {
             if (e is CosmosException { StatusCode: System.Net.HttpStatusCode.NotFound })
-                return new ProfileSettings(id, settingsId, false); // Item not found
+                return new ProfileSettings(id, settingsId, false, BotMode.Default.BotModeId); // Item not found
 
             throw new Exception($"Failed to retrieve settings: {e.Message}");
         }
@@ -72,9 +76,10 @@ public class CosmosDbStorageSettingsService : ISettingsService
         return new AppSettings
         {
             AppSettingsId = profileSettings.email,
-            NotificationsEnabled = profileSettings.notificationsEnabled
+            NotificationsEnabled = profileSettings.notificationsEnabled,
+            BotMode = BotMode.FromId(profileSettings.botModeId)
         };
     }
 
-    private record ProfileSettings(string id, string email, bool notificationsEnabled);
+    private record ProfileSettings(string id, string email, bool notificationsEnabled, int botModeId);
 }

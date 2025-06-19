@@ -1,9 +1,11 @@
 ﻿@page
 @using AAI.Core
 @using AAI.GenericChatInterface.Options
+@using AAI.Interfaces
 @using Microsoft.Extensions.Options
 @model AAI.GenericChatInterface.Pages.Chat.IndexPageModel
 @inject IOptions<GeneralOptions> GeneralOptionsValue
+
 @{
     ViewData["Title"] = "Chat with AI Assistant";
 }
@@ -12,7 +14,8 @@
     <div class="row">
         <div class="col-12">
             <div class="mt-2 mb-2">
-                Conversion Name: <b>{{ threadName }}</b> (<a asp-page="/Profile/ChatHistory">check history</a>)
+                Conversion Name: <b>{{ threadName }}</b> (<a asp-page="/Profile/ChatHistory">check history</a>) <br>
+                Bot Mode: <b>{{ @Model.UserSettings.BotMode.Name }}</b> (<a asp-page="/Profile/My">change mode</a>) 
             </div>
             <div class="float-end m-2">
                 <v-btn size="large" density="compact"
@@ -25,7 +28,7 @@
         </div>
     </div>
     <div v-if="isLoading" class="m-5">
-        <v-skeleton-loader :elevation="6" color="information" type="card"></v-skeleton-loader>
+        <v-skeleton-loader :elevation="6" color="info" type="card-avatar"></v-skeleton-loader>
     </div>
     <div class="row chat-container" id="chatMessages">
         <div class="messages d-flex flex-column">
@@ -80,70 +83,7 @@
             generateThreadRoute.value = '@DataRoutes.GenerateThreadNameRoute';
             apiChatRoute.value = '@GeneralRoutes.ChatRoute';
             threadName.value = '@StringHelper.GenerateUniqueName()';
-            email.value = '@User.Identity?.Name';
-        }
-
-        function createNewThread() {
-            console.log('clearForm function called');
-            isLoading.value = true;
-            messageText.value = '';
-            fetch(getThreadUrl.value)
-                .then(response => {
-                    if (!response.ok) {
-                        console.log("There has been an error while fetching data from the server.");
-                        isLoading.value = false;
-                        items.value = [];
-                        return Promise.reject(response);
-                    }
-                    return response.json(); // Parse the JSON from the response
-                }).then(data => {
-                console.log('Thread name generated successfully:', data);
-                threadName.value = data;
-                isLoading.value = false;
-                items.value = [];
-            }).catch(error => {
-                console.error('Unable to generate thread names.', error);
-                isLoading.value = false;
-                items.value = [];
-            });
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function sendChatMessage() {
-            console.log('sendChatMessage function called');
-            isLoading.value = true;
-            let parentId = '';
-            if (items.value.length > 0) {
-                parentId = items.value[items.value.length - 1].id;
-                console.log('Parent ID:', parentId);
-            } else {
-                console.log('No previous messages, no parent ID.');
-            }
-            let sendMessageItem = {
-                email: email.value,
-                text: messageText.value,
-                threadName: threadName.value,
-                parentId: parentId
-            };
-            fetch(saveChatUrl.value, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(sendMessageItem)
-            }).then(response => {
-                if (!response.ok) {
-                    console.log("There has been an error while fetching data from the server.");
-                    isLoading.value = false;
-                    return Promise.reject(response);
-                }
-                console.log('Message sent successfully:', response);
-                isLoading.value = false;
-            });
-
-            messageText.value = '';
+            email.value = '@User.Identity?.Name';            
         }
     </script>
     <script src="js/chats.js"></script>

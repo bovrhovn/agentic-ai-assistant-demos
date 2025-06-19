@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using AAI.Interfaces;
+﻿using AAI.Interfaces;
 using AAI.Models;
 using Azure.Identity;
 using Microsoft.Azure.Cosmos;
@@ -34,14 +33,14 @@ public class CosmosDbChatRepository : IChatRepository
         CosmosClient cosmosClient = new(accountEndpoint: serviceUrl,
             tokenCredential: defaultAzureCredential);
         var settingDatabase = cosmosClient.GetDatabase(database);
-        cosmosClient.CreateDatabaseIfNotExistsAsync(database)
-            .GetAwaiter().GetResult();
+        // cosmosClient.CreateDatabaseIfNotExistsAsync(database)
+        //     .GetAwaiter().GetResult();
         container = settingDatabase.GetContainer(containerName);
-        container.Database.CreateContainerIfNotExistsAsync(new ContainerProperties
-        {
-            Id = containerName,
-            PartitionKeyPaths = ["/email", "/threadName"]
-        }).GetAwaiter().GetResult();
+        // container.Database.CreateContainerIfNotExistsAsync(new ContainerProperties
+        // {
+        //     Id = containerName,
+        //     PartitionKeyPaths = ["/email", "/threadName"]
+        // }).GetAwaiter().GetResult();
     }
 
     public async Task<List<Chat>> GetForUserAsync(string userId)

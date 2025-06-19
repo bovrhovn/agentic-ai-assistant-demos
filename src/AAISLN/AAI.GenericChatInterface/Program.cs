@@ -48,7 +48,7 @@ builder.Services.AddTransient<ILogger>(p =>
 
 //services
 var storageOptions = builder.Configuration.GetSection(StorageOptions.AppSettingsName).Get<StorageOptions>()!;
-builder.Services.AddScoped<ISettingsService, CosmosDbStorageSettingsService>(_ =>
+builder.Services.AddScoped<ISettingsService, CosmosDbSettingsService>(_ =>
     new(storageOptions.DatabaseName, storageOptions.SettingsContainer, storageOptions.ConnectionString));
 builder.Services.AddHttpClient<ChatHttpService>();
 

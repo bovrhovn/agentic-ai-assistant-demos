@@ -6,4 +6,8 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\AAI.Core\AAI.Core.csproj" />
+    </ItemGroup>
+
 </Project>

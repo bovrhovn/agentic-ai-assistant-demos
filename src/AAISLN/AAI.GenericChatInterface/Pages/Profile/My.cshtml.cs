@@ -1,4 +1,5 @@
-﻿using AAI.Interfaces;
+﻿using AAI.Core;
+using AAI.Interfaces;
 using AAI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -21,8 +22,8 @@ public class MyPageModel(ILogger<MyPageModel> logger, ISettingsService settingsS
         {
             logger.LogInformation("MyPageModel OnPost called at {Time}", DateTime.UtcNow);
             await settingsService.UpdateAsync(MySettings);
-            logger.LogInformation("Settings saved for user {UserId} at {Time}", 
-                User.Identity?.Name, 
+            logger.LogInformation("Settings saved for user {UserId} at {Time}",
+                User.Identity?.Name,
                 DateTime.UtcNow);
             TempData["Message"] = "Settings saved successfully.";
         }
@@ -37,4 +38,5 @@ public class MyPageModel(ILogger<MyPageModel> logger, ISettingsService settingsS
     }
 
     [BindProperty] public AppSettings MySettings { get; set; } = new();
+    [BindProperty] public List<BotMode> BotModes { get; set; } = BotMode.GetAll();
 }

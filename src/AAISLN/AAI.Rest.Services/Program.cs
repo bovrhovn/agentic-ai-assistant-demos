@@ -11,7 +11,6 @@ builder.Services.AddOptions<DataOptions>()
     .Bind(builder.Configuration.GetSection(DataOptions.DataSettingsName))
     .ValidateDataAnnotations()
     .ValidateOnStart();
-
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
 builder.Services.AddCors(options =>
@@ -32,8 +31,8 @@ var dataOptions = builder.Configuration.GetSection(DataOptions.DataSettingsName)
 var cosmosDbChatRepository =
     new CosmosDbChatRepository(dataOptions.DatabaseName, dataOptions.ChatContainer, dataOptions.ConnectionString);
 builder.Services.AddScoped<IChatRepository, CosmosDbChatRepository>(_ => cosmosDbChatRepository);
-builder.Services.AddScoped<IBotService, SingleAgentBotService>(_ =>
-    new(cosmosDbChatRepository, dataOptions.AgentsProject, dataOptions.DeploymentName));
+builder.Services.AddScoped<IBotService, AzureOpenAIChatService>(_ =>
+    new(cosmosDbChatRepository, dataOptions.AgentsProjectUri, dataOptions.DeploymentName));
 
 var app = builder.Build();
 if (!app.Environment.IsDevelopment())

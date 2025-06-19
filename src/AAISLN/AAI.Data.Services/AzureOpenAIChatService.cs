@@ -1,19 +1,18 @@
 ﻿using AAI.Interfaces;
 using AAI.Models;
-using Azure.AI.Agents.Persistent;
 using Azure.AI.OpenAI;
 using Azure.Identity;
 using OpenAI.Chat;
 
 namespace AAI.Data.Services;
 
-public class SingleAgentBotService : IBotService
+public class AzureOpenAIChatService : IBotService
 {
     private readonly IChatRepository chatRepository;
     private readonly string deploymentName;
     private readonly AzureOpenAIClient client;
 
-    public SingleAgentBotService(IChatRepository chatRepository, string projectEndpoint, string deploymentName)
+    public AzureOpenAIChatService(IChatRepository chatRepository, string projectEndpoint, string deploymentName)
     {
         this.chatRepository = chatRepository;
         this.deploymentName = deploymentName;
@@ -53,11 +52,14 @@ public class SingleAgentBotService : IBotService
             {
                 switch (chat.ChatType)
                 {
-                    case ChatModelType.User:
-                        messages.Add(new UserChatMessage(chat.Text));
-                        break;
                     case ChatModelType.Assistant:
                         messages.Add(new AssistantChatMessage(chat.Text));
+                        break;
+                    case ChatModelType.System:
+                        messages.Add(new SystemChatMessage(chat.Text));
+                        break;
+                    case ChatModelType.User:
+                        messages.Add(new UserChatMessage(chat.Text));
                         break;
                 }
             }
@@ -66,17 +68,13 @@ public class SingleAgentBotService : IBotService
         messages.Add(new UserChatMessage(userInput));
         var response = await chatClient.CompleteChatAsync(messages, requestOptions);
         if (response.Value == null)
-        {
             throw new InvalidOperationException("No response from the chat service.");
-        }
         
         var assistantMessage = response.Value.Content.FirstOrDefault()?.Text;
         if (string.IsNullOrEmpty(assistantMessage))
-        {
             throw new InvalidOperationException("No content in the response from the chat service.");
-        }
         
-        //call to agent service and save the response to the chat repository
+        //call to Azure OpenAI and save the response to the chat repository
         var model = new Chat
         {
             ChatId = Guid.NewGuid().ToString(),
