@@ -1,3 +1,16 @@
 ### get new thread name
 GET {{ base-url}}/chat/generate-thread-name
-    
+
+### get chat items based on thread id
+GET {{ base-url}}/chat/get-thread-data/{{ testThreadName }}
+
+### save data to thread
+POST {{ base-url}}/chat/save/
+Content-Type: application/json
+ 
+{    
+    "threadName": "{{ testThreadName }}",
+    "email": "{{ testEmail }}",
+    "parentId": "{{ testParentId }}",
+    "text": "This is a test message from the API call" 
+}

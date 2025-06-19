@@ -33,7 +33,7 @@
     <div class="row chat-container" id="chatMessages">
         <div class="messages d-flex flex-column">
             <div v-for="item in items" :key="item.id" class="message"
-                 :class="{user: item.type ==='user', assistant: item.type === 'assistant', system: item.type === 'system'}">
+                 :class="{user: item.messageType ==='user', assistant: item.messageType === 'assistant', system: item.messageType === 'system'}">
                 {{ item.text }}
                 <div class="timestamp">{{ item.timeStamp }}</div>
             </div>

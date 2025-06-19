@@ -71,18 +71,23 @@ function sendChatMessage() {
     }).then(response => {
         if (!response.ok) {
             console.log("There has been an error while fetching data from the server.");
-            isLoading.value = false;
-            items.value = [];
+            isLoading.value = false;            
             return Promise.reject(response);
-        }
+        }        
         return response.json(); // Parse the JSON from the response
     }).then(response => {
         console.log('Message sent successfully:', response);
+        // Add the new message to the items array
+        items.value.push({
+            id: response.id,
+            text: response.text,
+            type: response.type,
+            timeStamp: response.timeStamp
+        });
         isLoading.value = false;
     }).catch(error => {
         console.error('Unable to get message from service.', error);
-        isLoading.value = false;
-        items.value = [];
+        isLoading.value = false;        
     });
 
     messageText.value = '';

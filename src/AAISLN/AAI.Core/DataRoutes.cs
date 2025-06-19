@@ -5,4 +5,5 @@ public static class DataRoutes
     public const string SaveChatRoute = "save";
     public const string GenerateThreadNameRoute = "generate-thread-name";
     public const string GetHistoryRoute = "get-history";
+    public const string GetThreadDataRoute = "get-thread-data";
 }

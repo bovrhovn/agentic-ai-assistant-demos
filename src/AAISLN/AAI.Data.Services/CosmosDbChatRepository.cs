@@ -63,12 +63,7 @@ public class CosmosDbChatRepository : IChatRepository
                 UserId = item.email,
                 ThreadName = item.threadName,
                 ChatId = item.id,
-                ParentChat = new Chat
-                {
-                    ChatId = item.parentId,
-                    ThreadName = item.threadName,
-                    UserId = item.email, Text = string.Empty
-                },
+                ParentId = item.parentId,
                 Text = item.text,
                 ChatType = (ChatModelType)item.modelType,
                 DatePosted = item.createdAt
@@ -97,12 +92,7 @@ public class CosmosDbChatRepository : IChatRepository
                 UserId = item.email,
                 ThreadName = item.threadName,
                 ChatId = item.id,
-                ParentChat = new Chat
-                {
-                    ChatId = item.parentId,
-                    ThreadName = item.threadName,
-                    UserId = item.email, Text = string.Empty
-                },
+                ParentId = item.parentId,
                 Text = item.text,
                 ChatType = (ChatModelType)item.modelType,
                 DatePosted = item.createdAt
@@ -118,13 +108,13 @@ public class CosmosDbChatRepository : IChatRepository
             id: chat.ChatId,
             threadName: chat.ThreadName,
             email: chat.UserId,
-            parentId: chat.ParentChat.ChatId,
+            parentId: chat.ParentId,
             text: chat.Text,
             modelType: (int)chat.ChatType,
             createdAt: chat.DatePosted);
 
         var response =
-            await container.UpsertItemAsync(item: model, partitionKey: new PartitionKey(chat.UserId));
+            await container.UpsertItemAsync(item: model, partitionKey: new PartitionKey(chat.UserId), new ItemRequestOptions());
         if (response.StatusCode != System.Net.HttpStatusCode.OK &&
             response.StatusCode != System.Net.HttpStatusCode.Created)
         {

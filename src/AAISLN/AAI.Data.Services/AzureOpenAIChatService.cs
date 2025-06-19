@@ -24,7 +24,7 @@ public class AzureOpenAIChatService : IBotService
                 ExcludeManagedIdentityCredential = false,
                 ExcludeVisualStudioCredential = true
             });
-        client = new (new Uri(projectEndpoint), defaultAzureCredential);
+        client = new(new Uri(projectEndpoint), defaultAzureCredential);
     }
 
     public async Task<Chat> GetResponseAsync(string userInput, string conversationId, string userId,
@@ -40,9 +40,8 @@ public class AzureOpenAIChatService : IBotService
         var messages = new List<ChatMessage>
         {
             new SystemChatMessage("You are a chat assistant that helps users with their queries. " +
-                                  "You should provide helpful and accurate responses based on the user's input." + 
-                                  "If you don't know the answer say 'I don't know'.")
-            
+                                  "You should provide helpful and accurate responses based on the user's input." +
+                                  "If you don't know the answer say 'I don't know, retrain the model'.")
         };
         var theWholeThread = await chatRepository.GetForThreadAsync(conversationId);
         if (theWholeThread.Any())
@@ -65,28 +64,21 @@ public class AzureOpenAIChatService : IBotService
             }
         }
 
-        messages.Add(new UserChatMessage(userInput));
         var response = await chatClient.CompleteChatAsync(messages, requestOptions);
         if (response.Value == null)
             throw new InvalidOperationException("No response from the chat service.");
-        
+
         var assistantMessage = response.Value.Content.FirstOrDefault()?.Text;
         if (string.IsNullOrEmpty(assistantMessage))
             throw new InvalidOperationException("No content in the response from the chat service.");
-        
+
         //call to Azure OpenAI and save the response to the chat repository
         var model = new Chat
         {
             ChatId = Guid.NewGuid().ToString(),
             ThreadName = conversationId,
             UserId = userId,
-            ParentChat = new Chat
-            {
-                ChatId = parentId,
-                UserId = userId,
-                Text = userInput,
-                ThreadName = conversationId
-            },
+            ParentId = parentId,
             Text = assistantMessage,
             ChatType = ChatModelType.Assistant,
             DatePosted = DateTime.Now
