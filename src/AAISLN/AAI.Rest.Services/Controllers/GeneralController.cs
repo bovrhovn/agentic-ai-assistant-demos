@@ -8,7 +8,7 @@ namespace AAI.Rest.Services.Controllers;
 public class GeneralController(ILogger<GeneralController> logger) : ControllerBase
 {
     [HttpGet]
-    [Route(GeneralRoutes.ErrorRoute)]
+    [Route(GeneralRoutes.HealthRoute)]
     [EndpointSummary("This is a health check for the chat controller.")]
     [EndpointDescription(
         "This is a health check for the AAI chat controller to see if it is online and all system are workings.")]
