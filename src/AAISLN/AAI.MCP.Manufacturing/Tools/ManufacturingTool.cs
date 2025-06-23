@@ -22,4 +22,3 @@ public static class ManufacturingTool
 }
 
 public record MachineInfo(string machineId, string status, double temperature);
-
