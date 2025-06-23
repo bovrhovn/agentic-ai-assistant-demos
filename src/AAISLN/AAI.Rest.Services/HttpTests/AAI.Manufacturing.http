@@ -1,0 +1,14 @@
+### get machine list
+GET {{ base-url}}/manufacturing/get-machines
+
+### get machine statuses
+GET {{ base-url}}/manufacturing/get-machine-statuses
+
+### get machine status by id
+GET {{ base-url}}/manufacturing/get-machine-status/MS-sample
+
+### GET finished goods
+GET {{ base-url}}/manufacturing/get-finished-goods
+    
+### GET raw materials
+GET {{ base-url}}/manufacturing/get-raw-materials  
