@@ -15,5 +15,5 @@ public class ChatHistoryPageModel(ILogger<ChatHistoryPageModel> logger, ChatHttp
             ChatHistoryList.Count, userEmail);
     }
 
-    public List<ChatHistoryViewModel> ChatHistoryList { get; set; } = new();
+    public List<ChatHistoryViewModel> ChatHistoryList { get; set; } = [];
 }

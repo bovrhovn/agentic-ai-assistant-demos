@@ -12,3 +12,6 @@ GET {{ base-url}}/manufacturing/get-finished-goods
     
 ### GET raw materials
 GET {{ base-url}}/manufacturing/get-raw-materials  
+    
+### Download machine logs
+GET {{ base-url}}/manufacturing/get-machine-logs

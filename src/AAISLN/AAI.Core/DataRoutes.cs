@@ -14,4 +14,5 @@ public static class DataRoutes
     public const string ManufacturingGetRawMaterialsRoute = "get-raw-materials";
     public const string ManufacturingGetFinishedGoodsRoute = "get-finished-goods";
     public const string ManufacturingGetMachineStatusesRoute = "get-machine-statuses";
+    public const string ManufacturingGetMachineLogs = "get-machine-logs";
 }

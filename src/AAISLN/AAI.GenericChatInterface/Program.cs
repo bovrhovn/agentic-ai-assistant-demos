@@ -15,8 +15,8 @@ using Microsoft.Identity.Web.UI;
 var builder = WebApplication.CreateBuilder(args);
 
 // options
-builder.Services.AddOptions<StorageOptions>()
-    .Bind(builder.Configuration.GetSection(StorageOptions.AppSettingsName))
+builder.Services.AddOptions<DataStorageOptions>()
+    .Bind(builder.Configuration.GetSection(DataStorageOptions.DataStorageOptionsName))
     .ValidateDataAnnotations()
     .ValidateOnStart();
 builder.Services.AddOptions<GeneralOptions>()
@@ -46,7 +46,7 @@ builder.Services.AddTransient<ILogger>(p =>
 });
 
 //services
-var storageOptions = builder.Configuration.GetSection(StorageOptions.AppSettingsName).Get<StorageOptions>()!;
+var storageOptions = builder.Configuration.GetSection(DataStorageOptions.DataStorageOptionsName).Get<DataStorageOptions>()!;
 builder.Services.AddScoped<ISettingsService, CosmosDbSettingsService>(_ =>
     new(storageOptions.DatabaseName, storageOptions.SettingsContainer, storageOptions.ConnectionString));
 builder.Services.AddHttpClient<ChatHttpService>();
