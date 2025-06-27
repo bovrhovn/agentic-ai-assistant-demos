@@ -11,6 +11,7 @@ public record BotMode(int BotModeId, string Name)
             2 => AgentWithTools,
             3 => AgentToAgent,
             4 => AgentToAgentWithTools,
+            5 => AgentToMcp,
             _ => Default
         };
 
@@ -19,7 +20,8 @@ public record BotMode(int BotModeId, string Name)
         AzureOpenAIDeployment,
         AgentWithTools,
         AgentToAgent,
-        AgentToAgentWithTools
+        AgentToAgentWithTools,
+        AgentToMcp
     ];
     
     public static BotMode AzureOpenAIDeployment { get; } = new(1, "Azure OpenAI Deployment");

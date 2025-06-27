@@ -28,7 +28,7 @@ public class AzureOpenAIChatService : IAzureOpenAIBotService
     }
 
     public async Task<Chat> GetResponseAsync(string userInput, string conversationId, string userId,
-        string parentId = "")
+        string parentId = "", string instructionsForAgent = "")
     {
         var chatClient = client.GetChatClient(deploymentName);
         var requestOptions = new ChatCompletionOptions
@@ -41,7 +41,7 @@ public class AzureOpenAIChatService : IAzureOpenAIBotService
         {
             new SystemChatMessage("You are a chat assistant that helps users with their queries. " +
                                   "You should provide helpful and accurate responses based on the user's input." +
-                                  "If you don't know the answer say 'I don't know, retrain the model'.")
+                                  "If you don't know the answer say 'I don't know'.")
         };
         var theWholeThread = await chatRepository.GetForThreadAsync(conversationId);
         if (theWholeThread.Any())
