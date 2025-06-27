@@ -10,54 +10,15 @@ namespace AAI.Rest.Services.Controllers;
 
 [ApiController, Route(GeneralRoutes.ChatRoute),
  AllowAnonymous, Produces(MediaTypeNames.Application.Json)]
-public class ChatController(ILogger<ChatController> logger, IChatRepository chatRepository, 
-    IAzureOpenAIBotService botService)
+public class ChatController(
+    ILogger<ChatController> logger,
+    IChatRepository chatRepository,
+    ISettingsService settingsService,
+    IAzureOpenAIBotService azureOpenAIBotService,
+    IAgentWithToolsBotService agentWithToolsBotService,
+    IAgentToMcpBotService agentToMcpBotService)
     : ControllerBase
 {
-    [HttpGet]
-    [Route(DataRoutes.GetHistoryRoute + "/{email}")]
-    [EndpointSummary("Get history chats for user based on primary key.")]
-    [EndpointDescription(
-        "This endpoint is used to get the chat history for a user based on their email address. It is used by the AAI chat interface to display the chat history.")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetHistoryAsync([FromRoute]string email)
-    {
-        logger.LogInformation("Called get history endpoint at {DateCalled}", DateTime.UtcNow);
-        var items = await chatRepository.GetForUserAsync(email);
-        if (items == null || items.Count == 0)
-        {
-            logger.LogInformation("No chat history found for user {Email} at {DateCalled}", email, DateTime.UtcNow);
-            return NotFound($"No chat history found for user {email}.");
-        }
-
-        logger.LogInformation("Found {Count} items for {Email}", items.Count, email);
-        return Ok(items);
-    }
-
-    [HttpGet]
-    [Route(DataRoutes.GetThreadDataRoute + "/{threadName}")]
-    [EndpointSummary("Get thread items for user based on thread name.")]
-    [EndpointDescription(
-        "This endpoint is used to get the chat history for a user based on their thread name. It is used by the AAI chat interface to display the chat history for a specific thread.")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetThreadItemsAsync(string threadName)
-    {
-        logger.LogInformation("Called get items for thread endpoint at {DateCalled}", DateTime.UtcNow);
-        var items = await chatRepository.GetForThreadAsync(threadName);
-        logger.LogInformation("Found {Count} items for {ThreadName}", items.Count, threadName);
-        var list = new List<ChatItem>();
-        foreach (var item in items)
-        {
-            list.Add(new ChatItem(item.ChatId,
-                item.ParentId,
-                item.Text,
-                item.ChatType.ToString().ToLowerInvariant(),
-                item.DatePosted.ToString("o")));
-        }
-
-        return Ok(list);
-    }
-
     private record ChatItem(string id, string parentId, string text, string sender, string timeStamp);
 
     [HttpPost]
@@ -94,10 +55,28 @@ public class ChatController(ILogger<ChatController> logger, IChatRepository chat
 
         logger.LogInformation("Chat saved successfully for user {Email} at {DateSaved}", chatDto.Email,
             DateTime.UtcNow);
+
         try
         {
+            var settings = await settingsService.GetAsync(chatDto.Email);
+            var instructions = string.Empty;
+            IBotService botService;
+            if (settings.BotMode == BotMode.AzureOpenAIDeployment)
+                botService = azureOpenAIBotService;
+            else if (settings.BotMode == BotMode.AgentToMcp)
+                botService = agentToMcpBotService;
+            else if (settings.BotMode == BotMode.AgentWithTools)
+            {
+                botService = agentWithToolsBotService;
+                instructions =
+                    "You are an AI assistant that helps users with their questions. Answer the question as best as you can.";
+            }
+            else
+                throw new InvalidOperationException("Invalid bot mode specified.");
+
             //get answer from the bot service, save it to the chat repository and return the data
-            var botMessage = await botService.GetResponseAsync(chatDto.Text, chatDto.ThreadName, chatDto.Email);
+            var botMessage = await botService.GetResponseAsync(chatDto.Text, chatDto.ThreadName, chatDto.Email,
+                instructionsForAgent: instructions);
             logger.LogInformation("Chat saved successfully at {DateSaved}", DateTime.UtcNow);
             return Ok(new[]
             {
@@ -115,10 +94,55 @@ public class ChatController(ILogger<ChatController> logger, IChatRepository chat
         }
         catch (Exception e)
         {
-            logger.LogWarning("Bot response is empty for user {Email} at {DateCalled} with error message {ErrorMessage}", 
+            logger.LogWarning(
+                "Bot response is empty for user {Email} at {DateCalled} with error message {ErrorMessage}",
                 chatDto.Email, DateTime.UtcNow, e.Message);
             return BadRequest($"Failed to get bot response at {DateTime.Now} with {e.Message}.");
         }
+    }
+
+    [HttpGet]
+    [Route(DataRoutes.GetHistoryRoute + "/{email}")]
+    [EndpointSummary("Get history chats for user based on primary key.")]
+    [EndpointDescription(
+        "This endpoint is used to get the chat history for a user based on their email address. It is used by the AAI chat interface to display the chat history.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetHistoryAsync([FromRoute] string email)
+    {
+        logger.LogInformation("Called get history endpoint at {DateCalled}", DateTime.UtcNow);
+        var items = await chatRepository.GetForUserAsync(email);
+        if (items == null || items.Count == 0)
+        {
+            logger.LogInformation("No chat history found for user {Email} at {DateCalled}", email, DateTime.UtcNow);
+            return NotFound($"No chat history found for user {email}.");
+        }
+
+        logger.LogInformation("Found {Count} items for {Email}", items.Count, email);
+        return Ok(items);
+    }
+
+    [HttpGet]
+    [Route(DataRoutes.GetThreadDataRoute + "/{threadName}")]
+    [EndpointSummary("Get thread items for user based on thread name.")]
+    [EndpointDescription(
+        "This endpoint is used to get the chat history for a user based on their thread name. It is used by the AAI chat interface to display the chat history for a specific thread.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetThreadItemsAsync(string threadName)
+    {
+        logger.LogInformation("Called get items for thread endpoint at {DateCalled}", DateTime.UtcNow);
+        var items = await chatRepository.GetForThreadAsync(threadName);
+        logger.LogInformation("Found {Count} items for {ThreadName}", items.Count, threadName);
+        var list = new List<ChatItem>();
+        foreach (var item in items)
+        {
+            list.Add(new ChatItem(item.ChatId,
+                item.ParentId,
+                item.Text,
+                item.ChatType.ToString().ToLowerInvariant(),
+                item.DatePosted.ToString("o")));
+        }
+
+        return Ok(list);
     }
 
     [HttpGet]

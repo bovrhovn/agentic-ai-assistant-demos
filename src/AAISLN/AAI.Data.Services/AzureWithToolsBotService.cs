@@ -67,6 +67,7 @@ public class AzureWithToolsBotService(
                     chat.Text
                 );
             }
+            parentId = theWholeThread.Last().ChatId;
         }
         //give user input to the thread
         await client.Messages.CreateMessageAsync(thread.Id, 

@@ -77,21 +77,28 @@ builder.Services.AddOpenApi(options =>
 });
 
 builder.Services.AddHealthChecks();
-var storageOptions = builder.Configuration.GetSection(DataStorageOptions.DataStorageOptionsName).Get<DataStorageOptions>()!;
+var storageOptions = builder.Configuration.GetSection(DataStorageOptions.DataStorageOptionsName)
+    .Get<DataStorageOptions>()!;
 builder.Services.AddScoped<ISettingsService, CosmosDbSettingsService>(_ =>
     new(storageOptions.DatabaseName, storageOptions.SettingsContainer, storageOptions.ConnectionString));
-
 var objectStorageOptions = builder.Configuration.GetSection(MachineStorageOptions.StorageSettingsName)
     .Get<MachineStorageOptions>()!;
 builder.Services.AddScoped<IStorageService, MachineStorageService>(_ =>
-    new(objectStorageOptions.LogContainer,objectStorageOptions.StorageUri));
+    new(objectStorageOptions.LogContainer, objectStorageOptions.StorageUri));
 var dataOptions = builder.Configuration.GetSection(DataOptions.DataSettingsName).Get<DataOptions>()!;
 var cosmosDbChatRepository =
     new CosmosDbChatRepository(dataOptions.DatabaseName, dataOptions.ChatContainer, dataOptions.ConnectionString);
 builder.Services.AddScoped<IChatRepository, CosmosDbChatRepository>(_ => cosmosDbChatRepository);
 builder.Services.AddSingleton<FakeDataGenerator>();
+//different bot service implementations
 builder.Services.AddScoped<IAzureOpenAIBotService, AzureOpenAIChatService>(_ =>
     new(cosmosDbChatRepository, dataOptions.AzureOpenAIBaseURI, dataOptions.DeploymentName));
+builder.Services.AddScoped<IAgentWithToolsBotService, AzureWithToolsBotService>(_ =>
+    new(cosmosDbChatRepository, dataOptions.AgentsProjectUri, dataOptions.BingConnectionId,
+        dataOptions.AzureOpenAIBaseURI, dataOptions.DeploymentName));
+builder.Services.AddScoped<IAgentToMcpBotService, AgenToMCPBotService>(_ =>
+    new(cosmosDbChatRepository, dataOptions.McpServerUrl, dataOptions.AzureOpenAIBaseURI, dataOptions.DeploymentName,
+        dataOptions.DeploymentApiKey));
 
 var app = builder.Build();
 if (!app.Environment.IsDevelopment())
