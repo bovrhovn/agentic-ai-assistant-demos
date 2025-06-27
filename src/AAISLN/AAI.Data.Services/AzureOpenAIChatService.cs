@@ -62,6 +62,8 @@ public class AzureOpenAIChatService : IAzureOpenAIBotService
                         break;
                 }
             }
+
+            parentId = theWholeThread.Last().ChatId;
         }
 
         var response = await chatClient.CompleteChatAsync(messages, requestOptions);

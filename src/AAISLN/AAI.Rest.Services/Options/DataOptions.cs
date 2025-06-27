@@ -17,11 +17,19 @@ public class DataOptions
     [Required(ErrorMessage = "Agent project URI is required settings")]
     public required string AgentsProjectUri { get; init; }
 
+    public string McpServerUrl { get; set; } = "https://aai-mcp.vrhovnik.cloud/mcp";
+
     [Required(ErrorMessage = "Azure OpenAI base URI is required settings")]
     public required string AzureOpenAIBaseURI { get; init; }
-    
+
     public string ManufacturingLogFileName { get; init; } = "factory_log.txt";
 
     [Required(ErrorMessage = "Deployment name is required settings")]
     public required string DeploymentName { get; init; } = "gpt-4o";
+
+    [Required(ErrorMessage = "Bing connection ID is required settings")]
+    public required string BingConnectionId { get; init; }
+
+    [Required(ErrorMessage = "Deployment API key is required settings")]
+    public required string DeploymentApiKey { get; init; }
 }
