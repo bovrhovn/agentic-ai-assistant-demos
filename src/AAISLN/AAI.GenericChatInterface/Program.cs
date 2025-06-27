@@ -23,15 +23,20 @@ builder.Services.AddOptions<GeneralOptions>()
     .Bind(builder.Configuration.GetSection(GeneralOptions.GeneralWebName))
     .ValidateDataAnnotations()
     .ValidateOnStart();
+builder.Services.AddOptions<AuthApiOptions>()
+    .Bind(builder.Configuration.GetSection(AuthApiOptions.AuthOptionsSectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 // asp.net core features
 builder.Services.AddHealthChecks();
+//builder.Services.AddHttpsRedirection(options => options.HttpsPort = 443);
 builder.Services.Configure<ForwardedHeadersOptions>(options=>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor |
                                ForwardedHeaders.XForwardedProto;
-    options.KnownNetworks.Clear();
-    options.KnownProxies.Clear();
+    // options.KnownNetworks.Clear();
+    // options.KnownProxies.Clear();
 });
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));

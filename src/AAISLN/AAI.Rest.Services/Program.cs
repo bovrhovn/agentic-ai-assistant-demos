@@ -18,6 +18,10 @@ builder.Services.AddOptions<MachineStorageOptions>()
     .Bind(builder.Configuration.GetSection(MachineStorageOptions.StorageSettingsName))
     .ValidateDataAnnotations()
     .ValidateOnStart();
+builder.Services.AddOptions<AuthApiOptions>()
+    .Bind(builder.Configuration.GetSection(AuthApiOptions.AuthOptionsSectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 builder.Services.AddMemoryCache();
 builder.Services.AddTransient<ILogger>(p =>
 {
