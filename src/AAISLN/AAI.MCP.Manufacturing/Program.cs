@@ -1,6 +1,7 @@
 using AAI.Data.Services;
 using AAI.Interfaces;
 using AAI.MCP.Manufacturing.Options;
+using AAI.MCP.Manufacturing.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<WebOptions>(builder.Configuration.GetSection(WebOptions.WebSettingsName));
@@ -15,8 +16,8 @@ var storageOptions = builder.Configuration.GetSection(MachineDataOptions.Machine
     .Get<MachineDataOptions>()!;
 builder.Services.AddScoped<IStorageService, MachineStorageService>(_ =>
     new(storageOptions.ContainerName, storageOptions.ConnectionString));
-
+builder.Services.AddHttpClient<MachineService>();
 builder.Services.AddHttpClient();
 var app = builder.Build();
-app.MapMcp("/aii-mcp");
+app.MapMcp("/mcp");
 app.Run();

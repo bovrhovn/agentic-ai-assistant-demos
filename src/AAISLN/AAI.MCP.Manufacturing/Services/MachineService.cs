@@ -5,16 +5,21 @@ using Microsoft.Extensions.Options;
 
 namespace AAI.MCP.Manufacturing.Services;
 
-public class MachineService(ILogger<MachineService> logger, IOptions<WebOptions> webDataOptions, 
+public class MachineService(
+    ILogger<MachineService> logger,
+    IOptions<WebOptions> webDataOptions,
     HttpClient httpClient)
 {
     public async Task<List<MachineInfo>> GetMachinesAsync()
     {
         try
         {
-            httpClient.BaseAddress = new Uri(webDataOptions.Value.BaseUrl);
-            var response = await httpClient.GetStringAsync(DataRoutes.ManufacturingGetMachinesRoute);
+            var url =
+                $"{webDataOptions.Value.BaseUrl}{DataRoutes.ManufacturingRoute}/{DataRoutes.ManufacturingGetMachinesRoute}";
+            logger.LogInformation("Fetching machines from route: {Route}", url);
+            var response = await httpClient.GetStringAsync(url);
             var machineList = System.Text.Json.JsonSerializer.Deserialize<List<MachineInfo>>(response);
+            logger.LogInformation("Fetched {Count} machines", machineList?.Count ?? 0);
             return machineList ?? [];
         }
         catch (Exception ex)
@@ -23,14 +28,17 @@ public class MachineService(ILogger<MachineService> logger, IOptions<WebOptions>
             return [];
         }
     }
-    
+
     public async Task<List<FinishedGoodInfo>> GetFinishedGoodsAsync()
     {
         try
         {
-            httpClient.BaseAddress = new Uri(webDataOptions.Value.BaseUrl);
-            var response = await httpClient.GetStringAsync(DataRoutes.ManufacturingGetFinishedGoodsRoute);
+            var url =
+                $"{webDataOptions.Value.BaseUrl}{DataRoutes.ManufacturingRoute}/{DataRoutes.ManufacturingGetMachinesRoute}";
+            logger.LogInformation("Fetching machines from route: {Route}", url);
+            var response = await httpClient.GetStringAsync(url);
             var finishedGoods = System.Text.Json.JsonSerializer.Deserialize<List<FinishedGoodInfo>>(response);
+            logger.LogInformation("Fetched {Count} finished goods", finishedGoods?.Count ?? 0);
             return finishedGoods ?? [];
         }
         catch (Exception ex)
