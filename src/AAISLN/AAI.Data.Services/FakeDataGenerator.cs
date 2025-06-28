@@ -1,10 +1,8 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-
-namespace AAI.Rest.Services.Data;
-
+﻿using AAI.Models;
 using Bogus;
-using System;
-using System.Collections.Generic;
+using Microsoft.Extensions.Caching.Memory;
+
+namespace AAI.Data.Services;
 
 public class FakeDataGenerator(IMemoryCache memoryCache)
 {

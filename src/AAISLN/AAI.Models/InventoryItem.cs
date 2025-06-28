@@ -1,4 +1,4 @@
-﻿namespace AAI.Rest.Services.Data;
+﻿namespace AAI.Models;
 
 public class InventoryItem
 {

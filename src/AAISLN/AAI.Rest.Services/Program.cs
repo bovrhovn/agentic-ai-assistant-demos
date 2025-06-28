@@ -1,7 +1,6 @@
 using AAI.Core;
 using AAI.Data.Services;
 using AAI.Interfaces;
-using AAI.Rest.Services.Data;
 using AAI.Rest.Services.Options;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;

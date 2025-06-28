@@ -1,23 +1,27 @@
-﻿using AAI.Interfaces;
+﻿using System.ComponentModel;
+using System.Diagnostics;
+using AAI.Interfaces;
 using AAI.Models;
 using Microsoft.SemanticKernel;
 using ModelContextProtocol.Client;
 
 namespace AAI.Data.Services;
 
-public class AgenToMCPBotService(IChatRepository chatRepository,
+public class AgenToMCPBotService(
+    IChatRepository chatRepository,
     string mcpEndpoint,
-    string deploymentURI, 
+    string deploymentURI,
     string deploymentName,
-    string apiKey) 
+    string apiKey)
     : IAgentToMcpBotService
 {
-    public async Task<Chat> GetResponseAsync(string userInput, string conversationId, string userId, string parentId = "",
+    public async Task<Chat> GetResponseAsync(string userInput, string conversationId, string userId,
+        string parentId = "",
         string instructionsForAgent = "")
     {
         var theWholeThread = await chatRepository.GetForThreadAsync(conversationId);
         if (theWholeThread.Any()) parentId = theWholeThread.Last().ChatId;
-        
+
         var toolName = "ManufacturingAAI";
         var transport = new SseClientTransport(new SseClientTransportOptions
         {
@@ -30,12 +34,16 @@ public class AgenToMCPBotService(IChatRepository chatRepository,
         var builder = Kernel.CreateBuilder();
         builder.AddAzureOpenAIChatCompletion(deploymentName, deploymentURI, apiKey);
         var kernel = builder.Build();
+
+        kernel.Plugins.AddFromType<ClipboardAccess>();
         var kernelFunctions = tools.Select(tool => tool.AsKernelFunction());
         kernel.Plugins.AddFromFunctions(toolName, kernelFunctions);
-        var result = await kernel.InvokePromptAsync("Use the tool to get the answer to the question: " + userInput);
+        var result = await kernel.InvokePromptAsync(
+            $"Use the tool to get the answer to the question: {userInput}." +
+            "Always copy satisfactory content to the clipboard using available tools and inform user");
         var mcpResponse = result.GetValue<string>();
         ArgumentException.ThrowIfNullOrEmpty(mcpResponse);
-        
+
         var model = new Chat
         {
             ChatId = Guid.NewGuid().ToString(),
@@ -46,8 +54,29 @@ public class AgenToMCPBotService(IChatRepository chatRepository,
             ChatType = ChatModelType.Assistant,
             DatePosted = DateTime.Now
         };
-        
+
         await chatRepository.SaveAsync(model);
         return model;
+    }
+
+    sealed class ClipboardAccess
+    {
+        [KernelFunction]
+        [Description("Copies the provided content to the clipboard.")]
+        public static void SetClipboard(string content)
+        {
+            if (string.IsNullOrWhiteSpace(content)) return;
+
+            using var clipProcess = Process.Start(
+                new ProcessStartInfo
+                {
+                    FileName = "clip",
+                    RedirectStandardInput = true,
+                    UseShellExecute = false,
+                }) ?? throw new InvalidOperationException("Unable to start clip process.");
+
+            clipProcess.StandardInput.Write(content);
+            clipProcess.StandardInput.Close();
+        }
     }
 }
