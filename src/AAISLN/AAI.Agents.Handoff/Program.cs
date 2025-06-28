@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-var deploymentName = Environment.GetEnvironmentVariable("DEPLOYMENTNAME");
+var deploymentName = Environment.GetEnvironmentVariable("DEPLOYMENTNAME") ?? "gpt-4o";
 var apiKey = Environment.GetEnvironmentVariable("APIKEY");
 var endpoint = Environment.GetEnvironmentVariable("ENDPOINTURL");
 

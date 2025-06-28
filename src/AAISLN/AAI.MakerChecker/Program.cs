@@ -1,7 +1,5 @@
 ﻿#region Usings
 
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Text.Json;
 using AAI.MakerChecker;
 using Microsoft.SemanticKernel;
@@ -16,7 +14,7 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 Console.WriteLine("Maker Agents pattern with Semantic Kernel...");
 
-var deploymentName = Environment.GetEnvironmentVariable("DEPLOYMENTNAME");
+var deploymentName = Environment.GetEnvironmentVariable("DEPLOYMENTNAME") ?? "gpt-4o";
 ArgumentException.ThrowIfNullOrEmpty(deploymentName);
 var apiKey = Environment.GetEnvironmentVariable("APIKEY");
 ArgumentException.ThrowIfNullOrEmpty(apiKey);
@@ -230,24 +228,4 @@ Console.WriteLine("Exiting...");
 
 namespace AAI.MakerChecker
 {
-    sealed class ClipboardAccess
-    {
-        [KernelFunction]
-        [Description("Copies the provided content to the clipboard.")]
-        public static void SetClipboard(string content)
-        {
-            if (string.IsNullOrWhiteSpace(content)) return;
-
-            using var clipProcess = Process.Start(
-                new ProcessStartInfo
-                {
-                    FileName = "clip",
-                    RedirectStandardInput = true,
-                    UseShellExecute = false,
-                }) ?? throw new InvalidOperationException("Unable to start clip process.");
-
-            clipProcess.StandardInput.Write(content);
-            clipProcess.StandardInput.Close();
-        }
-    }
 }

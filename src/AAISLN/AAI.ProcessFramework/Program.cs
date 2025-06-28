@@ -7,12 +7,11 @@ Console.WriteLine("Semantic Kernel Processes Demo");
 
 #region Env variables
 
-var deploymentName = Environment.GetEnvironmentVariable("DEPLOYMENTNAME");
-var apiKey = Environment.GetEnvironmentVariable("APIKEY");
-var endpoint = Environment.GetEnvironmentVariable("ENDPOINTURL");
-
+var deploymentName = Environment.GetEnvironmentVariable("DEPLOYMENTNAME") ?? "gpt-4o"; 
 ArgumentException.ThrowIfNullOrEmpty(deploymentName);
+var apiKey = Environment.GetEnvironmentVariable("APIKEY");
 ArgumentException.ThrowIfNullOrEmpty(apiKey);
+var endpoint = Environment.GetEnvironmentVariable("ENDPOINTURL");
 ArgumentException.ThrowIfNullOrEmpty(endpoint);
 
 #endregion
