@@ -23,4 +23,20 @@ public class MachineService(ILogger<MachineService> logger, IOptions<WebOptions>
             return [];
         }
     }
+    
+    public async Task<List<FinishedGoodInfo>> GetFinishedGoodsAsync()
+    {
+        try
+        {
+            httpClient.BaseAddress = new Uri(webDataOptions.Value.BaseUrl);
+            var response = await httpClient.GetStringAsync(DataRoutes.ManufacturingGetFinishedGoodsRoute);
+            var finishedGoods = System.Text.Json.JsonSerializer.Deserialize<List<FinishedGoodInfo>>(response);
+            return finishedGoods ?? [];
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to get machines");
+            return [];
+        }
+    }
 }
