@@ -1,6 +1,7 @@
 ﻿using AAI.Core;
 using AAI.MCP.Manufacturing.Options;
 using AAI.MCP.Manufacturing.Tools;
+using AAI.Models;
 using Microsoft.Extensions.Options;
 
 namespace AAI.MCP.Manufacturing.Services;

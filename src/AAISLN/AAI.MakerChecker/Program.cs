@@ -225,7 +225,3 @@ do
 } while (!isComplete);
 
 Console.WriteLine("Exiting...");
-
-namespace AAI.MakerChecker
-{
-}

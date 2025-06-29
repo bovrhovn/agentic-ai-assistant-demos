@@ -20,5 +20,6 @@ RUN dotnet publish "AAI.Rest.Services/AAI.Rest.Services.csproj" -c Release -o /a
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 as final
 WORKDIR /app
 ENV ASPNETCORE_HTTP_PORTS=80
+ENV ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
 COPY --from=publish /app .
 ENTRYPOINT ["dotnet", "AAI.Rest.Services.dll"]

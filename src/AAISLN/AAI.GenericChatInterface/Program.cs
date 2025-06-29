@@ -30,6 +30,12 @@ builder.Services.AddOptions<AuthApiOptions>()
 
 // asp.net core features
 builder.Services.AddHealthChecks();
+// builder.Services.AddHsts(options =>
+// {
+//     options.Preload = true;
+//     options.IncludeSubDomains = true;
+//     options.MaxAge = TimeSpan.FromDays(60);
+// });
 //builder.Services.AddHttpsRedirection(options => options.HttpsPort = 443);
 builder.Services.Configure<ForwardedHeadersOptions>(options=>
 {

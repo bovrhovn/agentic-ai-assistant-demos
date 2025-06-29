@@ -16,7 +16,8 @@ public class ChatController(
     ISettingsService settingsService,
     IAzureOpenAIBotService azureOpenAIBotService,
     IAgentWithToolsBotService agentWithToolsBotService,
-    IAgentToMcpBotService agentToMcpBotService)
+    IAgentToMcpBotService agentToMcpBotService,
+    IAgentToAgentBotService agentToAgentService)
     : ControllerBase
 {
     private record ChatItem(string id, string parentId, string text, string sender, string timeStamp);
@@ -68,6 +69,12 @@ public class ChatController(
             else if (settings.BotMode == BotMode.AgentWithTools)
             {
                 botService = agentWithToolsBotService;
+                instructions =
+                    "You are an AI assistant that helps users with their questions. Answer the question as best as you can.";
+            }
+            else if (settings.BotMode == BotMode.AgentToAgent)
+            {
+                botService = agentToAgentService;
                 instructions =
                     "You are an AI assistant that helps users with their questions. Answer the question as best as you can.";
             }
