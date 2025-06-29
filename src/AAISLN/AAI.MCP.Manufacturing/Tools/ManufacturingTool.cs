@@ -3,6 +3,7 @@ using AAI.Core;
 using AAI.Data.Services;
 using AAI.MCP.Manufacturing.Options;
 using AAI.MCP.Manufacturing.Services;
+using AAI.Models;
 using Microsoft.Extensions.Options;
 using ModelContextProtocol.Server;
 
@@ -28,18 +29,17 @@ public class ManufacturingTool(ILogger<ManufacturingTool> logger, MachineService
     [Description("Returns status about the tool.")]
     public async Task<bool> CheckHealthForTools(HttpClient client, IOptions<WebOptions> options)
     {
+        logger.LogInformation("Checking health for manufacturing tools...");
         client.BaseAddress = new Uri(options.Value.BaseUrl);
         try
         {
             var response = await client.GetAsync(GeneralRoutes.HealthRoute);
             return response.IsSuccessStatusCode;
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            logger.LogError(error, "Error checking health for manufacturing tools.");
             return false;
         }
     }
 }
-
-public record MachineInfo(string machineId, string status, double temperature);
-public record FinishedGoodInfo(string name, int quantity, string unit, string location);

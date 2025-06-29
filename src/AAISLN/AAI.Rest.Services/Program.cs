@@ -88,6 +88,7 @@ var dataOptions = builder.Configuration.GetSection(DataOptions.DataSettingsName)
 var cosmosDbChatRepository =
     new CosmosDbChatRepository(dataOptions.DatabaseName, dataOptions.ChatContainer, dataOptions.ConnectionString);
 builder.Services.AddScoped<IChatRepository, CosmosDbChatRepository>(_ => cosmosDbChatRepository);
+//fake data generator for demo purposes
 builder.Services.AddSingleton<FakeDataGenerator>();
 //different bot service implementations
 builder.Services.AddScoped<IAzureOpenAIBotService, AzureOpenAIChatService>(_ =>
@@ -97,6 +98,9 @@ builder.Services.AddScoped<IAgentWithToolsBotService, AzureWithToolsBotService>(
         dataOptions.AzureOpenAIBaseURI, dataOptions.DeploymentName));
 builder.Services.AddScoped<IAgentToMcpBotService, AgenToMCPBotService>(_ =>
     new(cosmosDbChatRepository, dataOptions.McpServerUrl, dataOptions.AzureOpenAIBaseURI, dataOptions.DeploymentName,
+        dataOptions.DeploymentApiKey));
+builder.Services.AddScoped<IAgentToAgentBotService, AgentToAgentService>(_ =>
+    new(cosmosDbChatRepository, dataOptions.AzureOpenAIBaseURI, dataOptions.DeploymentName,
         dataOptions.DeploymentApiKey));
 
 var app = builder.Build();

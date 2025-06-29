@@ -17,7 +17,7 @@ public class DataOptions
     [Required(ErrorMessage = "Agent project URI is required settings")]
     public required string AgentsProjectUri { get; init; }
 
-    public string McpServerUrl { get; set; } = "https://aai-mcp.vrhovnik.cloud/mcp";
+    public string McpServerUrl { get; set; } = "http://aai-mcp.vrhovnik.cloud/mcp";
 
     [Required(ErrorMessage = "Azure OpenAI base URI is required settings")]
     public required string AzureOpenAIBaseURI { get; init; }

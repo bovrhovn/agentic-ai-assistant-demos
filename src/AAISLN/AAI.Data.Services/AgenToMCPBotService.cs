@@ -3,6 +3,8 @@ using System.Diagnostics;
 using AAI.Interfaces;
 using AAI.Models;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using ModelContextProtocol.Client;
 
 namespace AAI.Data.Services;
@@ -35,15 +37,24 @@ public class AgenToMCPBotService(
         builder.AddAzureOpenAIChatCompletion(deploymentName, deploymentURI, apiKey);
         var kernel = builder.Build();
 
-        kernel.Plugins.AddFromType<ClipboardAccess>();
+        //kernel.Plugins.AddFromType<ClipboardAccess>();
         var kernelFunctions = tools.Select(tool => tool.AsKernelFunction());
         kernel.Plugins.AddFromFunctions(toolName, kernelFunctions);
+
+        var executionSettings = new AzureOpenAIPromptExecutionSettings
+        {
+            Temperature = 0,
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        };
+
         var result = await kernel.InvokePromptAsync(
             $"Use the tool to get the answer to the question: {userInput}." +
-            "Always copy satisfactory content to the clipboard using available tools and inform user");
+            "Do a pretty formatted response with the tool name and the answer.",
+            new(executionSettings));
+        
         var mcpResponse = result.GetValue<string>();
         ArgumentException.ThrowIfNullOrEmpty(mcpResponse);
-
+        
         var model = new Chat
         {
             ChatId = Guid.NewGuid().ToString(),
